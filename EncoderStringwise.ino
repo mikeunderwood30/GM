@@ -73,7 +73,7 @@ void InitEncoderStringwise()
 // ***************************** scanStrStringwise() *************************************
 void scanStrStringwise(int ss)
 {
-	byte pitch
+	byte pitch;
 /*
 	Scan top-to-bottom for each string, and stop when we find one pressed, since we observe
 	a 'highest fretted note wins' rule per string.

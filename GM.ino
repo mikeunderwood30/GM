@@ -77,7 +77,7 @@ void noteOff(byte channel, byte pitch, byte velocity) {
 void setup()
 { 
 	Serial.begin(115200);
-	//Serial1.begin(31250);
+	Serial1.begin(31250);
 	//Serial.begin(9600);
 
 	Serial.println("Hello");
@@ -155,14 +155,17 @@ void loop()
 	do {
 	rx = MidiUSB.read();
 	if (rx.header != 0) {
-		Serial.print("Received: ");
-		Serial.print(rx.header, HEX);
-		Serial.print("-");
-		Serial.print(rx.byte1, HEX);
-		Serial.print("-");
-		Serial.print(rx.byte2, HEX);
-		Serial.print("-");
-		Serial.println(rx.byte3, HEX);
+		// Serial.print("Header: ");
+		// Serial.println(rx.header, HEX);
+		// //Serial.print("-");
+		// Serial.println(rx.byte1, HEX);
+		// //Serial.print("-");
+		// Serial.println(rx.byte2, HEX);
+		// //Serial.print("-");
+		// Serial.println(rx.byte3, HEX);
+		ProcessMidiIn(rx.byte1);
+		ProcessMidiIn(rx.byte2);
+		ProcessMidiIn(rx.byte3);
 	}
 	} while (rx.header != 0);
 
