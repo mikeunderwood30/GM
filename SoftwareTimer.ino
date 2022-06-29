@@ -1,6 +1,6 @@
 #include "Encoder.h"
 
-void sendChannelMsg(byte midiStatus, byte data1, byte data2);
+//void sendChannelMsg(byte midiStatus, byte data1, byte data2);
 
 // based on
 //  https://forum.arduino.cc/t/using-millis-for-timing-a-beginners-guide/483573

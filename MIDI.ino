@@ -1,4 +1,6 @@
 
+
+/*
 // ***************************************** checkSerialAvailable() ***********************************
 void checkSerialAvailable()
 {
@@ -99,6 +101,7 @@ void checkSerialAvailable()
       numBytes--;
   }
 }
+*/
 // ***************************************** processPrgChg() ************************************
 void processPrgChg(byte channel, byte prgChgValueIn)
 {

@@ -1,30 +1,74 @@
 
-// ***************************************** SendSimSysExMsg() ***********************************
-/*
-void SendSimSysExMsg(byte sysExMsg[], int size)
-{
-	for (int ii = 0; ii < size; ii++)
-	{
-		ProcessSysExByte(sysExMsg[ii]);
-	}
-	//sysExMsgType = CFG_CAT_UNKNOWN;
-	cfgByteCnt = -1;
-}
-*/
-// ***************************************** AccumSysExInput() ************************************
-void AccumSysExInput(byte bb)
-{	
-	//Serial.print(F("AccumSerialInput(). bb = "));
-	//Serial.println(bb);
+byte SerMsgBuffer[20];
 
-	//if (receivingSerial)
+static int cfgByteCnt;
+static bool isUpperNybble;
+static byte sysExByte;
+
+// ***************************************** AssembleSysExIn() ***********************************
+// Assembles 2 nybbles into a byte and then calls AccumSysExInput() which accums the byte into a buffer.
+// Once get EOX, then call ProcessSysExBuffer().
+void AssembleSysExIn(byte inByte)
+{
+	//if (dbgRawMidiIn)
 	//{
-		if (cfgByteCnt < 20)
-		{
-			SerMsgBuffer[cfgByteCnt] = bb;
-			cfgByteCnt++;
-		}
+	//	Serial.println(inByte, HEX);
+	//	Serial.print(F(" "));
 	//}
+		
+
+	if (inByte == STAT_SOX)
+	{
+		// prepare to receive data
+		isUpperNybble = false;
+		cfgByteCnt = 0;
+	}
+	else if (inByte == STAT_EOX)
+	{
+		ProcessSysExBuffer();
+	}
+	else
+	{
+		if (!isUpperNybble)
+		{
+			// this is a lower nybble, which arrives first
+			sysExByte = inByte;		
+			isUpperNybble = true;
+		}
+		else
+		{
+			sysExByte |= inByte << 4;
+			if (cfgByteCnt < 20)
+			{
+				// this is needed because SOX and EOX are also sent as individual nybbles.
+				if (sysExByte != STAT_SOX && sysExByte != STAT_EOX)
+				{
+					SerMsgBuffer[cfgByteCnt] = sysExByte;
+					cfgByteCnt++;
+				}
+			}
+			isUpperNybble = false;
+		}
+	}
+}
+
+// ***************************************** ProcessSysExBuffer() ************************************
+//  At this point, SerMsgBuffer[] has been filled and cfgByteCnt contains the # items.
+void ProcessSysExBuffer()
+{
+
+	Serial.print(F("ProcessSerialInput(); cfgByteCnt = "));
+	Serial.print(cfgByteCnt);
+	Serial.println(F(":"));
+	
+
+	for (int ii = 0; ii < cfgByteCnt; ii++)
+	{
+		Serial.print(SerMsgBuffer[ii], HEX);
+		Serial.print(F(" "));
+	}
+	
+	Serial.println();
 }
 
 /*
@@ -121,5 +165,18 @@ void ShowSysExMsgType(byte msgType)
 			Serial.println(msgType);
 			break;
 	}
+}
+*/
+
+// ***************************************** SendSimSysExMsg() ***********************************
+/*
+void SendSimSysExMsg(byte sysExMsg[], int size)
+{
+	for (int ii = 0; ii < size; ii++)
+	{
+		ProcessSysExByte(sysExMsg[ii]);
+	}
+	//sysExMsgType = CFG_CAT_UNKNOWN;
+	cfgByteCnt = -1;
 }
 */

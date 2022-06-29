@@ -1,6 +1,7 @@
 #include "ParmConfig.h"
 #include "Encoder.h"
 #include "MIDIUSB.h"
+#include "Common.h"
 
 // Uses Sparkfun Pro Micro Qwiic
 
@@ -163,9 +164,9 @@ void loop()
 		// Serial.println(rx.byte2, HEX);
 		// //Serial.print("-");
 		// Serial.println(rx.byte3, HEX);
-		ProcessMidiIn(rx.byte1);
-		ProcessMidiIn(rx.byte2);
-		ProcessMidiIn(rx.byte3);
+		AssembleSysExIn(rx.byte1);
+		AssembleSysExIn(rx.byte2);
+		AssembleSysExIn(rx.byte3);
 	}
 	} while (rx.header != 0);
 
