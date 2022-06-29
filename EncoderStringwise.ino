@@ -73,22 +73,11 @@ void InitEncoderStringwise()
 // ***************************** scanStrStringwise() *************************************
 void scanStrStringwise(int ss)
 {
+	byte pitch
 /*
-	Scan top-to-bottom for each string, and stop when we find one pressed, since we observe a 'highest fretted note wins' rule per string.
-  Legato mode is supported by sending the noteOn for new note before the noteOff for the old note.
+	Scan top-to-bottom for each string, and stop when we find one pressed, since we observe
+	a 'highest fretted note wins' rule per string.
 */
-	//boolean anyPressed;
-	//boolean currPressedStillPressed;
-  
-	// if this string was pressed last time we checked, see if the same note is still pressed.
-	//outputGmCount(gmMapByString[ss][currPressedStringwise[ss]]);
-	//delay(1);
-	//currPressedStillPressed = (digitalRead(strobePin) == HIGH);
-	
-	//anyPressed = false;
-
-	//Serial.print("Scan string ");
-	//Serial.println(ss);
 	
 	for (int ff = MAX_FRETS-1; ff >= 0; ff--)
 	{
@@ -114,8 +103,6 @@ void scanStrStringwise(int ss)
 			monoCurrPitch = ff + pitchOffsetStringwise[ss];
 			// Serial.print("monoCurrPitch = ");
 			// Serial.println(monoCurrPitch);
-
-      //delay(1000);
 			
 			// this will be the case while a note is held and no other pressed above it.
 			if (ff == currPressed[ss])
@@ -124,14 +111,25 @@ void scanStrStringwise(int ss)
 			}	
 			else
 			{
-				// A new keypress has been detected.
-				// turn off the lower fret if player has fingered something higher.
-				//if (currPressed[ss] != -1)
-				////{
-					//sendChannelMsg(0x80, currPressed[ss] + pitchOffsetStringwise[ss], 0x7f);
-					//Serial.println("Send note off");
-				//}
+				// fret has changed
+
 				currPressed[ss] = ff;
+
+				// if a note is sounding, need to change it.
+				if (rhcStr[ss].isPressed)
+				{
+					// send a noteOff for the fret that is sounding
+					noteOff(0, rhcStr[ss].msgPitch, 64); 	// Channel, pitch, velocity
+					MidiUSB.flush();
+
+					// send a noteOn for the new fret
+					pitch = currPressed[ss] + pitchOffsetStringwise[ss];
+					noteOn(0, pitch, 64);   // Channel, pitch, velocity
+					MidiUSB.flush();
+
+					// store the new fret value so a noteOff can be sent for it later.
+					rhcStr[ss].msgPitch = pitch;
+				}
 			}
 			// No need to check frets below this one.
 			break;
@@ -157,7 +155,7 @@ void scanStrStringwise(int ss)
 		if (digitalRead(rhcStr[ss].pinNumber))
 		{
 			rhcStr[ss].isPressed = true;
-			byte pitch = currPressed[ss] + pitchOffsetStringwise[ss];
+			pitch = currPressed[ss] + pitchOffsetStringwise[ss];
 
 			// Serial.print("Sending note on, pitch = ");	
 			// Serial.println(pitch);
