@@ -23,6 +23,7 @@ const int D4_pin = 6;		// p9. Mega p23
 const int D5_pin = 7;		// p10. Mega p22
 
 const int StrobeLHC = 8;	// p11. Mega p28.
+const int EncodeOverrideButton = 9;	// p12
 rhcStrItem rhcStr[NUM_GTR_STRINGS];
 
 //const int ResetRHC0 = 14;	// p15.

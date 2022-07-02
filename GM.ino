@@ -12,7 +12,9 @@
 #define FTSW_2	33
 #define FTSW_3	35
 
-#define CC_SRC_POT1	0
+#define CC_SRC_POT0	0
+#define CC_SRC_POT1	1
+#define CC_SRC_POT2	2
 
 void InitTimers();
 void StartLatchDebounce(byte str, unsigned int duration);
@@ -118,15 +120,18 @@ void setup()
   //Serial.println("Continuously checking strobe for changes.");
   //Serial.println("Hit the <Enter> key to do a stringwise scan on string 0.");
 
-  // first dimension is the setup number.
-  ccSource[0][CC_SRC_POT1].ccNum = 5;
-  ccSource[0][CC_SRC_POT1].channel = 1;
-  ccSource[0][CC_SRC_POT1].atodNum = A0;
+	// first dimension is the setup number.
+	ccSource[0][CC_SRC_POT0].ccNum = 5;
+	ccSource[0][CC_SRC_POT0].channel = 1;
+	ccSource[0][CC_SRC_POT0].atodNum = A0;
 
-  // test code
-  // loop Tx1 to Rx1, and should see this msg appear on input
-  sendChannelMsg(0x90, 0x55, 0x7f);
-  
+	ccSource[0][CC_SRC_POT1].ccNum = 5;
+	ccSource[0][CC_SRC_POT1].channel = 1;
+	ccSource[0][CC_SRC_POT1].atodNum = A1;
+
+	ccSource[0][CC_SRC_POT2].ccNum = 5;
+	ccSource[0][CC_SRC_POT2].channel = 1;
+	ccSource[0][CC_SRC_POT2].atodNum = A2;
 }
 
 int incomingByte;

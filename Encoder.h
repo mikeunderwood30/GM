@@ -65,6 +65,8 @@ extern const int D4_pin;
 extern const int D5_pin;
 
 extern const int StrobeLHC;
+extern const int EncodeOverrideButton;
+
 extern rhcStrItem rhcStr[];
 
 // if decide to use these, replace the pin mode etc in Setup() which was removed.

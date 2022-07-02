@@ -9,8 +9,10 @@ unsigned long baselineMillis;  //some global variables available anywhere in the
 unsigned long currentMillis;
 
 unsigned int pulseTimer;
+unsigned int encOverrideTimer;
 
 #define PULSE_TIMER_RELOAD  20
+#define ENC_OVERRIDE_TIMER_RELOAD  20
 
 // ***************************************** InitTimers()() ***********************************
 // called from Setup()
@@ -18,8 +20,9 @@ void InitTimers()
 {
   baselineMillis = millis();  //initial start time
 
-  // Plotter timer is cyclical.
+  // cyclical timers
   pulseTimer = PULSE_TIMER_RELOAD;
+  encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
 }
 
 // ***************************************** AddNoteToTimerPool() ***********************************
@@ -46,8 +49,15 @@ void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
 // called from loop()
 void ServiceTimers()
 {
+  static bool encOverridePressed = false;
+
+  static int currAdcValue0 = -1;
+  static int currAdcValue1 = -1;
+  static int currAdcValue2 = -1;
+
   currentMillis = millis();  //get the current number of milliseconds since the program started
   if (currentMillis == baselineMillis)   // everything divides the 1 ms clock
+  //if (currentMillis < baselineMillis + 50)
   {
       return;
   }
@@ -59,41 +69,76 @@ void ServiceTimers()
   // plotter will have a '0' entry every 1 ms.
   //Serial.print(0);  
 
-  // ----------------- Piezo --------------
-  /*
-  for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
-  {
-    if (rhcDebounce[ss].isActive)
-    {
-      rhcDebounce[ss].count--;
-      if(rhcDebounce[ss].count == 0)
-      {
-        //sendChannelMsg(0x80, rhcDebounce[ss].msgPitch, 0x7f);
+// ----------------- Cyclical --------------
 
-        rhcDebounce[ss].isActive = false;
-      }
-    }
-  }
-  */
-/*
-  // Note Pool
-  for (byte ss = 0; ss < NOTE_BUFFER_SIZE; ss++)
+  // 'Check override' timer is for checking if user has pressed or released the encoder override button.
+  encOverrideTimer--;   // use diff name since used for A to D also.
+
+  if(encOverrideTimer == 0)
   {
-    if (noteBuffer[ss].isActive)
+    if (encOverridePressed)
     {
-      noteBuffer[ss].count--;
-      if(noteBuffer[ss].count == 0)
+      if (digitalRead(EncodeOverrideButton) == LOW)
       {
-        noteBuffer[ss].isActive = false;
-        // Serial.print("Sending note off, pitch = ");	
-        // Serial.println(noteBuffer[ss].msgPitch);	
-        noteOff(0, noteBuffer[ss].msgPitch, 64);  // Channel 0, middle C, normal velocity
-        MidiUSB.flush();
+        Serial.println("Encoder override was released");	
+        encOverridePressed = false;
       }
     }
+    else
+    {
+      if (digitalRead(EncodeOverrideButton) == HIGH)
+      {
+        Serial.println("Encoder override was pressed");	
+        encOverridePressed = true;
+      }
+    }
+
+    // check A-to-D values for on-board controls, such as pots, etc
+    // read pot0
+    int adcValue = analogRead(ccSource[0][CC_SRC_POT0].atodNum);
+    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
+    if (adcValue > 127)	// should never be, but just in case.
+      adcValue = 127;
+
+    if (adcValue != currAdcValue0)
+    {
+      currAdcValue0 = adcValue;
+
+      Serial.print("Pot 0: ");
+      Serial.println(currAdcValue0);	
+    }
+
+      // read pot1
+    adcValue = analogRead(ccSource[0][CC_SRC_POT1].atodNum);
+    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
+    if (adcValue > 127)	// should never be, but just in case.
+      adcValue = 127;
+
+    if (adcValue != currAdcValue1)
+    {
+      currAdcValue1 = adcValue;
+
+      Serial.print("Pot 1: ");
+      Serial.println(currAdcValue1);	
+    }
+
+      // read pot2
+    adcValue = analogRead(ccSource[0][CC_SRC_POT2].atodNum);
+    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
+    if (adcValue > 127)	// should never be, but just in case.
+      adcValue = 127;
+
+    if (adcValue != currAdcValue2)
+    {
+      currAdcValue2 = adcValue;
+
+      Serial.print("Pot 2: ");
+      Serial.println(currAdcValue2);	
+    }
+
+    encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
   }
-*/
- // ----------------- Cyclical --------------
+
   // Pulse timer is just for reference. Idea is to have a constant pulse on the plotter display.
   pulseTimer--;
 
