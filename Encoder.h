@@ -5,11 +5,16 @@
 #define NUM_GTR_STRINGS	4
 #define NOTE_BUFFER_SIZE	8
 
+// Encoder modes
 #define ENC_MODE_PRESET_SELECT	0
-#define ENC_MODE_STRINGWISE	1		
+#define ENC_MODE_STRINGWISE	1
+#define ENC_MODE_AUTOCHORD	2	
+
+// Autochord
+#define AC_NUM_CHORDS 5
+#define AC_NOTES_PER_CHORD 4
 
 extern void InitEncoders();
-//extern void scanStrStringwise(int ss);
 
 // used for timing note duration
 // typedef struct
@@ -23,7 +28,7 @@ extern void InitEncoders();
 
 typedef struct
 {
-	int currFret;	// has a value of -1 when open
+	int currFret;	// has a value of -1 when string is open
 	bool changed;	// set if currFret has changed.
 	int encMode;	// the current encoder mode, unless 'override' is in effect.
 	int encModeBackup;	// for saving encMode value when override is in effect.
@@ -46,11 +51,6 @@ typedef struct
 	bool changed;	// set if currFret has changed.
 	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
 } lhEncodeSwItem;
-
-//extern int pitchOffsetStringwise[];
-//extern int channelStringwise[];
-
-//extern rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
 extern int noteDurationFromPot;
 extern byte monoCurrPitch;

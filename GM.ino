@@ -209,6 +209,10 @@ void loop()
 			case ENC_MODE_STRINGWISE:
 				EncodeStringwise(ss);
 				break;
+
+			case ENC_MODE_AUTOCHORD:
+				EncodeAutochord(ss);
+				break;	
 		}
 	}
 

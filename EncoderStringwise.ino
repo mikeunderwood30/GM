@@ -5,13 +5,22 @@
 
 #include "Encoder.h"
 
-void outputGmCount(byte count);
+void outputGmCount(byte);
+void ExecutePreset(int);
 
 int gmMapByString[4][16] = {
 61, 59, 63, 57, 62, 56, 58, 60, 21, 19, 23, 17, 22, 16, 18, 20,
 45, 43, 47, 41, 46, 40, 42, 44, 37, 35, 39, 33, 38, 32, 34, 36,
 13, 11, 15, 9, 14, 8, 10, 12, 53, 51, 55, 49, 54, 48, 50, 52,
 29, 27, 31, 25, 30, 24, 26, 28, 5, 3, 7, 1, 6, 0, 2, 4
+};
+
+byte acChord[AC_NUM_CHORDS][AC_NOTES_PER_CHORD] = {
+  0,0,0,0,
+  0,0,0,0,
+  0,0,0,0,
+  0,0,0,0,
+  0,0,0,0
 };
 
 // define pins that select the count. Pin numbers here are for the Sparkfun Pro Micro Qwiic.
@@ -31,35 +40,18 @@ rhcStrItem rhcStr[NUM_GTR_STRINGS];
 lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
 lhEncodeSwItem lhEncodeSw[NUM_GTR_STRINGS];
 
-// ------------------------------------ Poly Encoder ---------------------------
-
-// int pitchOffsetStringwise[NUM_GTR_STRINGS];
-// int channelStringwise[NUM_GTR_STRINGS];
-
-//rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
-
 int noteDurationFromPot;
 byte monoCurrPitch;
 
 // ************************** InitEncoderStringwise() ****************************
 void InitEncoderStringwise()
 {
-	lhEncodeSw[0].pitchOffset = 53;
-	lhEncodeSw[0].channel = 8;
-
-	lhEncodeSw[1].pitchOffset = 48;
-	lhEncodeSw[1].channel = 9;
-
-	lhEncodeSw[2].pitchOffset = 43;
-	lhEncodeSw[2].channel = 10;
-
-	lhEncodeSw[3].pitchOffset = 38;
-	lhEncodeSw[3].channel = 11;
-
 	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		lhEncodeSw[ss].currFret = -1;
 	}
+
+	ExecutePreset(0);
 }
 // ***************************** EncodeStringwise() *************************************
 void EncodeStringwise(int ss)
@@ -184,4 +176,24 @@ void scanBasic()
 		}
 	}
 }
+// ***************************** EncodeAutochord() *************************************
+// In this AC mode, notes are 'always on'. User needs to have a means of manually controlling the volume, such as a pedal.
+void EncodeAutochord(int ss)
+{
+	if (lhEncodeBasic[ss].changed && lhEncodeBasic[ss].currFret != -1)
+	{
+		int index = lhEncodeBasic[ss].currFret;
+    Serial.print("New AC chord. Index = ");
+    Serial.println(index);
+      
+		if (index < AC_NUM_CHORDS)
+		{
+			// send note offs for any existing chord
+			// look up notes based on index.
+			// send noteOns for these notes.
+			// store them so can send noteOffs later. 
+		}
 
+		lhEncodeBasic[ss].changed = false;
+	}
+}
