@@ -67,16 +67,16 @@ byte dataByte2;
 byte gChannel;  //  Channel numbers are 0 based
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	//Serial.print("Sending note on, pitch = ");	
-	//Serial.println(pitch);
+	Serial.print("Sending note on, pitch = ");	
+	Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	//Serial.print("Sending note off, pitch = ");	
-	//Serial.println(pitch);
+	Serial.print("Sending note off, pitch = ");	
+	Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -117,7 +117,7 @@ void setup()
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		encMode[ii] = ENC_MODE_STRINGWISE;
+		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE;
 	}
 
 	InitTimers();
@@ -191,9 +191,10 @@ void loop()
 
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		switch (encMode[ss])
+		switch (lhEncodeBasic[ss].encMode)
 		{
 			case ENC_MODE_PRESET_SELECT:
+				EncodePresetSelect(ss);
 				break;
 
 			case ENC_MODE_STRINGWISE:
@@ -202,7 +203,7 @@ void loop()
 		}
 	}
 
-	//ServiceTimers();
+	ServiceTimers();
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1

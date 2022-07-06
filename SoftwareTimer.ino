@@ -25,26 +25,6 @@ void InitTimers()
   encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
 }
 
-// ***************************************** AddNoteToTimerPool() ***********************************
-void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
-{ 
-    // monoRhcNoteDuration.count = duration;
-    // monoRhcNoteDuration.msgPitch = msgPitch;
-    // monoRhcNoteDuration.isActive = true;
-
-    //noteBuffer[NOTE_BUFFER_SIZE];
-    for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
-    {
-      if (!noteBuffer[ii].isActive)
-      {
-        noteBuffer[ii].msgPitch = msgPitch;
-        noteBuffer[ii].count = duration;
-        noteBuffer[ii].isActive = true;
-
-        break;
-      }
-    }
-}
 // ***************************************** ServiceTimers() ************************************
 // called from loop()
 void ServiceTimers()
@@ -82,6 +62,11 @@ void ServiceTimers()
       {
         Serial.println("Encoder override was released");	
         encOverridePressed = false;
+
+        for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+        {
+          lhEncodeBasic[ss].encMode = lhEncodeBasic[ss].encModeBackup;
+        }
       }
     }
     else
@@ -94,14 +79,14 @@ void ServiceTimers()
         for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
         {
           // backup the current encoder mode so it can be restored when override is over.
-          encModeBackup[ss] = encMode[ss];
+          lhEncodeBasic[ss].encModeBackup = lhEncodeBasic[ss].encMode;
 
           // override the encoder mode. This will allow user to select a Preset using the fretboard.
-          encMode[ss] = ENC_MODE_PRESET_SELECT;
+          lhEncodeBasic[ss].encMode = ENC_MODE_PRESET_SELECT;
         }
       }
     }
-
+/*
     // check A-to-D values for on-board controls, such as pots, etc
     // read pot0
     int adcValue = analogRead(ccSource[0][CC_SRC_POT0].atodNum);
@@ -144,7 +129,7 @@ void ServiceTimers()
       Serial.print("Pot 2: ");
       Serial.println(currAdcValue2);	
     }
-
+*/
     encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
   }
 
@@ -157,3 +142,25 @@ void ServiceTimers()
     pulseTimer = PULSE_TIMER_RELOAD;
   }
 }
+/*
+// ***************************************** AddNoteToTimerPool() ***********************************
+void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
+{ 
+    // monoRhcNoteDuration.count = duration;
+    // monoRhcNoteDuration.msgPitch = msgPitch;
+    // monoRhcNoteDuration.isActive = true;
+
+    //noteBuffer[NOTE_BUFFER_SIZE];
+    for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
+    {
+      if (!noteBuffer[ii].isActive)
+      {
+        noteBuffer[ii].msgPitch = msgPitch;
+        noteBuffer[ii].count = duration;
+        noteBuffer[ii].isActive = true;
+
+        break;
+      }
+    }
+}
+*/
