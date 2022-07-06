@@ -33,33 +33,32 @@ lhEncodeSwItem lhEncodeSw[NUM_GTR_STRINGS];
 
 // ------------------------------------ Poly Encoder ---------------------------
 
-int pitchOffsetStringwise[NUM_GTR_STRINGS];
-int channelStringwise[NUM_GTR_STRINGS];
-//bool sustainStringwise[NUM_GTR_STRINGS];
+// int pitchOffsetStringwise[NUM_GTR_STRINGS];
+// int channelStringwise[NUM_GTR_STRINGS];
 
 //rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
 int noteDurationFromPot;
 byte monoCurrPitch;
 
-// ************************** InitEncoders() ****************************
-void InitEncoders()
-{ 
-	pitchOffsetStringwise[3] = 38;
-	pitchOffsetStringwise[2] = 43;
-	pitchOffsetStringwise[1] = 48;
-	pitchOffsetStringwise[0] = 53;
+// ************************** InitEncoderStringwise() ****************************
+void InitEncoderStringwise()
+{
+	lhEncodeSw[0].pitchOffset = 53;
+	lhEncodeSw[0].channel = 8;
 
-	channelStringwise[0] = 8;
-	channelStringwise[1] = 9;
-	channelStringwise[2] = 10;
-	channelStringwise[3] = 11;
+	lhEncodeSw[1].pitchOffset = 48;
+	lhEncodeSw[1].channel = 9;
+
+	lhEncodeSw[2].pitchOffset = 43;
+	lhEncodeSw[2].channel = 10;
+
+	lhEncodeSw[3].pitchOffset = 38;
+	lhEncodeSw[3].channel = 11;
 
 	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		lhEncodeBasic[ss].currFret = -1;	// open
 		lhEncodeSw[ss].currFret = -1;
-		lhEncodeBasic[ss].changed = false;
 	}
 }
 // ***************************** EncodeStringwise() *************************************
@@ -97,7 +96,7 @@ void EncodeStringwise(int ss)
 		if (digitalRead(rhcStr[ss].pinNumber))		// and now it is,
 		{	
 			rhcStr[ss].isPressed = true;	// so it only does this once
-			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + pitchOffsetStringwise[ss];
+			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
 			
 			noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();	
@@ -124,47 +123,11 @@ void EncodeStringwise(int ss)
 				MidiUSB.flush();
 
 				// calc the the new fret value and store it so a noteOff can be sent
-				lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + pitchOffsetStringwise[ss];
+				lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
 				// send a noteOn for the new fret
 				noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
 				MidiUSB.flush();
 			}
-		}
-	}
-}
-
-// ***************************** EncodePresetSelect() *************************************
-void EncodePresetSelect(int str)
-{
-	int preset;
-
-	// ignore ss. Scan all 4 strings every time this is called.
-	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
-	{
-		if (lhEncodeBasic[ss].changed && lhEncodeBasic[ss].currFret != -1)
-		{
-			preset = ss * 16 + lhEncodeBasic[ss].currFret;
-
-			Serial.print("preset ");
-			Serial.println(preset);	
-
-			switch (preset)
-			{
-				case 0:
-					//encModeBackup[ss]
-					break;
-
-				case 1:
-					break;
-
-				case 2:
-					break;
-
-				default:
-					break;
-			}
-
-			lhEncodeBasic[ss].changed = false;
 		}
 	}
 }
@@ -221,114 +184,4 @@ void scanBasic()
 		}
 	}
 }
-/*
-// ***************************** scanStrStringwise() *************************************
-void scanStrStringwise(int ss)
-{
-	byte pitch;
-	
-	for (int ff = MAX_FRETS-1; ff >= 0; ff--)
-	{
-			//Serial.print("outputting count on string ");
-			//Serial.print(ss);
-			//Serial.print(", fret ");
-			//Serial.println(ff);
 
-		outputGmCount(gmMapByString[ss][ff]);
-		//delay(3000);
-
-		//check whether this fret seems to be pressed.
-		if (digitalRead(StrobeLHC) == LOW)
-		{		
-			//Serial.print("detected key pressed on string ");
-			//Serial.print(ss);
-			//Serial.print(", fret ");
-			//Serial.println(ff);
-	
-			//Serial.print("Count = ");
-			//Serial.println(gmMapByString[ss][ff]);
-
-			monoCurrPitch = ff + pitchOffsetStringwise[ss];
-			// Serial.print("monoCurrPitch = ");
-			// Serial.println(monoCurrPitch);
-			
-			// this will be the case while a note is held and no other pressed above it.
-			if (ff == currFret[ss])
-			{	// do nothing. We already know this fret is pressed.
-				//Serial.print(".");
-			}	
-			else
-			{
-				// fret has changed
-
-				currFret[ss] = ff;
-
-				// if a note is sounding, need to change it.
-				if (rhcStr[ss].isPressed)
-				{
-					// send a noteOff for the fret that is sounding
-					noteOff(0, rhcStr[ss].msgPitch, 64); 	// Channel, pitch, velocity
-					MidiUSB.flush();
-
-					// send a noteOn for the new fret
-					pitch = currFret[ss] + pitchOffsetStringwise[ss];
-					noteOn(0, pitch, 64);   // Channel, pitch, velocity
-					MidiUSB.flush();
-
-					// store the new fret value so a noteOff can be sent for it later.
-					rhcStr[ss].msgPitch = pitch;
-				}
-			}
-			// No need to check frets below this one.
-			break;
-		}
-		else	// fret is found not to be pressed
-		{
-			// 
-			if (ff == currFret[ss])
-			{
-				//currFret[ss] = -1;
-				// This was pressed before, but now is not.
-				//Serial.print("-");
-				//Serial.print(ss);
-				//Serial.print(",");
-				//Serial.println(ff);
-			}
-		}
-	}
-
-	// RHC
-	if (!rhcStr[ss].isPressed)
-	{
-		if (digitalRead(rhcStr[ss].pinNumber))
-		{
-			rhcStr[ss].isPressed = true;
-			pitch = currFret[ss] + pitchOffsetStringwise[ss];
-
-			// Serial.print("Sending note on, pitch = ");	
-			// Serial.println(pitch);
-			
-			noteOn(0, pitch, 64);   // Channel, pitch, velocity
-			MidiUSB.flush();
-
-			rhcStr[ss].msgPitch = pitch;
-
-			//Serial.print("Calling AddNoteToTimerPool(). duration = ");  
-			//Serial.println(noteDurationFromPot);
-			//AddNoteToTimerPool(noteDurationFromPot, pitch);
-		}
-	}
-	else
-	{
-		if (!digitalRead(rhcStr[ss].pinNumber))
-		{
-			rhcStr[ss].isPressed = false;
-			// Serial.print("Sending note off, pitch = ");	
-			// Serial.println(rhcStr[ss].msgPitch);
-
-			noteOff(0, rhcStr[ss].msgPitch, 64); 	// Channel, pitch, velocity
-			MidiUSB.flush();
-		}
-	}
-}
-*/

@@ -121,7 +121,16 @@ void setup()
 	}
 
 	InitTimers();
-	InitEncoders();
+
+	// Init basic encoder
+	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		lhEncodeBasic[ss].currFret = -1;	// open
+		lhEncodeBasic[ss].changed = false;
+	}
+
+	InitEncoderStringwise();
+	InitEncoderPresetSelect();
 
   //Serial.println("Hit the <Enter> key to check status of strobe input.");
   //Serial.println("Continuously checking strobe for changes.");
@@ -207,53 +216,15 @@ void loop()
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1
-	int adcValue = analogRead(ccSource[0][CC_SRC_POT1].atodNum);
-	adcValue = adcValue >> 3;	// 0-1024 range to 0-127
-	if (adcValue > 127)	// should never be, but just in case.
-		adcValue = 127;
+// 	int adcValue = analogRead(ccSource[0][CC_SRC_POT1].atodNum);
+// 	adcValue = adcValue >> 3;	// 0-1024 range to 0-127
+// 	if (adcValue > 127)	// should never be, but just in case.
+// 		adcValue = 127;
 
-	noteDurationFromPot = adcValue * 15;	// 127 * 15 = 1905 ms. About 2 seconds max duration.
+// 	noteDurationFromPot = adcValue * 15;	// 127 * 15 = 1905 ms. About 2 seconds max duration.
   
-  if (noteDurationFromPot < 10)
-    noteDurationFromPot = 10;
-
-	//Serial.println(noteDurationFromPot);
-
-	// for (int ii = 0; ii < NUM_GTR_STRINGS; ii++)
-	// {
-		// if (!rhcStr[ii].isPressed)
-		// {
-		// 	if (digitalRead(rhcStr[ii].pinNumber))
-		// 	{
-		// 		rhcStr[ii].isPressed = true;
-		// 		byte pitch = currFret[ii] + pitchOffsetStringwise[ii];
-
-		// 		// Serial.print("Sending note on, pitch = ");	
-		// 		// Serial.println(pitch);
-				
-		// 		noteOn(0, pitch, 64);   // Channel, pitch, velocity
-		// 		MidiUSB.flush();
-
-		// 		rhcStr[ii].msgPitch = pitch;
-
-		// 		//Serial.print("Calling AddNoteToTimerPool(). duration = ");  
-		// 		//Serial.println(noteDurationFromPot);
-		// 		//AddNoteToTimerPool(noteDurationFromPot, pitch);
-		// 	}
-		// }
-		// else
-		// {
-		// 	if (!digitalRead(rhcStr[ii].pinNumber))
-		// 	{
-		// 		rhcStr[ii].isPressed = false;
-		// 		// Serial.print("Sending note off, pitch = ");	
-		// 		// Serial.println(rhcStr[ii].msgPitch);
-
-		// 		noteOff(0, rhcStr[ii].msgPitch, 64); 	// Channel, pitch, velocity
-		// 		MidiUSB.flush();
-		// 	}
-		// }
-	// }
+//   if (noteDurationFromPot < 10)
+//     noteDurationFromPot = 10;
 
 	// ---------------- maybe use later --------------------
 	//checkSerialAvailable();

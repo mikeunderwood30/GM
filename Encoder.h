@@ -5,11 +5,6 @@
 #define NUM_GTR_STRINGS	4
 #define NOTE_BUFFER_SIZE	8
 
-// #define PIEZO_ONESHOT_0	0
-// #define PIEZO_ONESHOT_1	1
-// #define PIEZO_ONESHOT_2	2
-// #define PIEZO_ONESHOT_3	3
-
 #define ENC_MODE_PRESET_SELECT	0
 #define ENC_MODE_STRINGWISE	1		
 
@@ -23,9 +18,7 @@ extern void InitEncoders();
 // 	unsigned int count;	
 
 // 	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
-// 	//int aToDNum;
-// 	//int pitchOffsetStringwise[NUM_GTR_STRINGS];
-// 	//int channelStringwise[NUM_GTR_STRINGS];
+
 // } rhcNoteDurationItem;
 
 typedef struct
@@ -45,15 +38,17 @@ typedef struct
 
 typedef struct
 {
+	int pitchOffset;
+	int channel;
+	// bool sustain;
+
 	int currFret;	// never has a value of -1
 	bool changed;	// set if currFret has changed.
 	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
 } lhEncodeSwItem;
 
-extern int pitchOffsetStringwise[];
-extern int channelStringwise[];
-
-//extern bool sustainStringwise[];
+//extern int pitchOffsetStringwise[];
+//extern int channelStringwise[];
 
 //extern rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
@@ -73,11 +68,5 @@ extern const int EncodeOverrideButton;
 extern rhcStrItem rhcStr[];
 extern lhcBasicItem lhEncodeBasic[];
 extern lhEncodeSwItem lhEncodeSw[];
-
-// if decide to use these, replace the pin mode etc in Setup() which was removed.
-//extern const int ResetRHC0;
-//extern const int ResetRHC1;
-//extern const int ResetRHC2;
-//extern const int ResetRHC3;
 
 #endif
