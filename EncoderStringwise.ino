@@ -24,30 +24,32 @@ const int D5_pin = 7;		// p10. Mega p22
 
 const int StrobeLHC = 8;	// p11. Mega p28.
 const int EncodeOverrideButton = 9;	// p12
+
+// ------------------------------------ Basic Encoder ---------------------------
+
 rhcStrItem rhcStr[NUM_GTR_STRINGS];
+lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
+lhEncodeItem lhEncode[NUM_GTR_STRINGS];
 
-//const int ResetRHC0 = 14;	// p15.
-//const int ResetRHC1 = 15;	// p16.
-//const int ResetRHC2 = 0;	// pin TBD
-//const int ResetRHC3 = 0;	// pin TBD
+// ------------------------------------ Poly Encoder ---------------------------
 
-// ------------------------------------ GM Stringwise1 encoder ---------------------------
-int currPressed[NUM_GTR_STRINGS];
-//int lastPressed;	// mono mode uses this. It's the last pressed, no matter which string.
-
-int candidate[NUM_GTR_STRINGS];
-int debounceTimer[NUM_GTR_STRINGS];
 int pitchOffsetStringwise[NUM_GTR_STRINGS];
 int channelStringwise[NUM_GTR_STRINGS];
-bool sustainStringwise[NUM_GTR_STRINGS];
+//bool sustainStringwise[NUM_GTR_STRINGS];
 
 rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
 int noteDurationFromPot;
 byte monoCurrPitch;
 
-// ************************** InitEncoderStringwise() ****************************
-void InitEncoderStringwise()
+// This represents the current encoder mode, unless 'override' is in effect.
+int encMode[NUM_GTR_STRINGS];
+// When 'override' goes into effect, save the current encoder mode here so it
+// can be restored when override goes off.
+int encModeBackup[NUM_GTR_STRINGS];
+
+// ************************** InitEncoders() ****************************
+void InitEncoders()
 { 
 	pitchOffsetStringwise[3] = 38;
 	pitchOffsetStringwise[2] = 43;
@@ -59,26 +61,141 @@ void InitEncoderStringwise()
 	channelStringwise[2] = 10;
 	channelStringwise[3] = 11;
 
-	//rhcDebounce[0].aToDNum = A0;
-	//rhcDebounce[1].aToDNum = A1;
-	//rhcDebounce[2].aToDNum = A2;
-	//rhcDebounce[3].aToDNum = A3;
-
 	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		currPressed[ss] = -1;  // nothing pressed initially
-		candidate[ss] = -1;  // nothing pressed initially
-		sustainStringwise[ss] = false;
+		lhEncodeBasic[ss].currFret = -1;	// open
+		lhEncode[ss].currFret = -1;
+		lhEncodeBasic[ss].changed = false;
 	}
 }
+// ***************************** EncodeStringwise() *************************************
+void EncodeStringwise(int ss)
+{
+	if (lhEncodeBasic[ss].changed)
+	{
+		// Serial.print(lhEncodeBasic[ss].currFret);
+		// Serial.print(", ");
+		// Serial.println(lhEncode[ss].currFret);
+
+		if (lhEncodeBasic[ss].currFret != -1)		// ignore if 'open'
+		{
+			if (lhEncode[ss].currFret != lhEncodeBasic[ss].currFret)
+			{
+				lhEncode[ss].currFret = lhEncodeBasic[ss].currFret;
+
+				// This 'changed' flag is only for the case where something changes while RHC is pressed.
+				// If we set it even when RHC is not pressed, we'll get an extra off/on when it does get pressed.
+				if (rhcStr[ss].isPressed)
+				{
+					lhEncode[ss].changed = true;
+				}
+
+				// Serial.print("Current fret is now ");	
+				// Serial.println(lhEncode[ss].currFret);
+			}
+		}
+
+		lhEncodeBasic[ss].changed = false;
+	}
+
+	if (!rhcStr[ss].isPressed)		// if it wasn't pressed,
+	{
+		if (digitalRead(rhcStr[ss].pinNumber))		// and now it is,
+		{	
+			rhcStr[ss].isPressed = true;	// so it only does this once
+			lhEncode[ss].msgPitch = lhEncode[ss].currFret + pitchOffsetStringwise[ss];
+			
+			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+			MidiUSB.flush();	
+		}
+	}
+	else	// if it was pressed,
+	{
+		if (!digitalRead(rhcStr[ss].pinNumber))		// no longer is
+		{	
+			rhcStr[ss].isPressed = false;
+
+			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+			MidiUSB.flush();
+		}
+		else	// still is
+		{
+			// if LH has changed
+			if (lhEncode[ss].changed)
+			{	
+				lhEncode[ss].changed = false;	// so does this once only
+
+				// send a noteOff for the fret that is sounding
+				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+				MidiUSB.flush();
+
+				// calc the the new fret value and store it so a noteOff can be sent
+				lhEncode[ss].msgPitch = lhEncode[ss].currFret + pitchOffsetStringwise[ss];
+				// send a noteOn for the new fret
+				noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+				MidiUSB.flush();
+			}
+		}
+	}
+}
+
+// ***************************** scanBasic() *************************************
+// This scanner is common to all encoders.
+// For each string, scan and determine what is pressed. If something has changed, set a flag.
+// Scan top-to-bottom for each string, and stop when we find one pressed, since we observe
+// a 'highest fretted note wins' rule per string.
+void scanBasic()
+{
+	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		for (int ff = MAX_FRETS-1; ff >= -1; ff--)
+		{
+			if (ff == -1)
+			{
+				if (ff != lhEncodeBasic[ss].currFret)
+				{
+					lhEncodeBasic[ss].changed = true;
+					lhEncodeBasic[ss].currFret = ff;
+				}
+
+				break;
+			}
+
+			//Serial.print("outputting count on string ");
+			//Serial.print(ss);
+			//Serial.print(", fret ");
+			//Serial.println(ff);
+
+			outputGmCount(gmMapByString[ss][ff]);
+			//delay(3000);
+
+			//check whether this fret seems to be pressed.
+			if (digitalRead(StrobeLHC) == LOW)
+			{		
+				//Serial.print("detected key pressed on string ");
+				//Serial.print(ss);
+				//Serial.print(", fret ");
+				//Serial.println(ff);
+		
+				//Serial.print("Count = ");
+				//Serial.println(gmMapByString[ss][ff]);
+				
+				if (ff != lhEncodeBasic[ss].currFret)
+				{
+					lhEncodeBasic[ss].changed = true;
+					lhEncodeBasic[ss].currFret = ff;
+				}
+				// No need to check frets below this one.
+				break;
+			}
+		}
+	}
+}
+/*
 // ***************************** scanStrStringwise() *************************************
 void scanStrStringwise(int ss)
 {
 	byte pitch;
-/*
-	Scan top-to-bottom for each string, and stop when we find one pressed, since we observe
-	a 'highest fretted note wins' rule per string.
-*/
 	
 	for (int ff = MAX_FRETS-1; ff >= 0; ff--)
 	{
@@ -106,7 +223,7 @@ void scanStrStringwise(int ss)
 			// Serial.println(monoCurrPitch);
 			
 			// this will be the case while a note is held and no other pressed above it.
-			if (ff == currPressed[ss])
+			if (ff == currFret[ss])
 			{	// do nothing. We already know this fret is pressed.
 				//Serial.print(".");
 			}	
@@ -114,7 +231,7 @@ void scanStrStringwise(int ss)
 			{
 				// fret has changed
 
-				currPressed[ss] = ff;
+				currFret[ss] = ff;
 
 				// if a note is sounding, need to change it.
 				if (rhcStr[ss].isPressed)
@@ -124,7 +241,7 @@ void scanStrStringwise(int ss)
 					MidiUSB.flush();
 
 					// send a noteOn for the new fret
-					pitch = currPressed[ss] + pitchOffsetStringwise[ss];
+					pitch = currFret[ss] + pitchOffsetStringwise[ss];
 					noteOn(0, pitch, 64);   // Channel, pitch, velocity
 					MidiUSB.flush();
 
@@ -138,9 +255,9 @@ void scanStrStringwise(int ss)
 		else	// fret is found not to be pressed
 		{
 			// 
-			if (ff == currPressed[ss])
+			if (ff == currFret[ss])
 			{
-				//currPressed[ss] = -1;
+				//currFret[ss] = -1;
 				// This was pressed before, but now is not.
 				//Serial.print("-");
 				//Serial.print(ss);
@@ -156,7 +273,7 @@ void scanStrStringwise(int ss)
 		if (digitalRead(rhcStr[ss].pinNumber))
 		{
 			rhcStr[ss].isPressed = true;
-			pitch = currPressed[ss] + pitchOffsetStringwise[ss];
+			pitch = currFret[ss] + pitchOffsetStringwise[ss];
 
 			// Serial.print("Sending note on, pitch = ");	
 			// Serial.println(pitch);
@@ -184,3 +301,4 @@ void scanStrStringwise(int ss)
 		}
 	}
 }
+*/

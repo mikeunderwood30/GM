@@ -10,8 +10,11 @@
 // #define PIEZO_ONESHOT_2	2
 // #define PIEZO_ONESHOT_3	3
 
-extern void InitEncoderStringwise();
-extern void scanStrStringwise(int ss);
+#define ENC_MODE_PRESET_SELECT	0
+#define ENC_MODE_STRINGWISE	1		
+
+extern void InitEncoders();
+//extern void scanStrStringwise(int ss);
 
 // used for timing note duration
 typedef struct
@@ -30,32 +33,33 @@ typedef struct
 {
 	int pinNumber;
 	bool isPressed;
-	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
 } rhcStrItem;
 
-// typedef struct
-// {
-// int currPressed[NUM_GTR_STRINGS];
-// int candidate[NUM_GTR_STRINGS];
-// int debounceTimer[NUM_GTR_STRINGS];
+typedef struct
+{
+	int currFret;	// has a value of -1 when open
+	bool changed;	// set if currFret has changed.
+} lhcBasicItem;
 
-// bool sustainStringwise[NUM_GTR_STRINGS];
-// } lhcStrItem;
+typedef struct
+{
+	int currFret;	// never has a value of -1
+	bool changed;	// set if currFret has changed.
+	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
+} lhEncodeItem;
 
 extern int pitchOffsetStringwise[];
 extern int channelStringwise[];
-extern int currPressed[];
-//extern int lastPressed;
 
-extern int candidate[];
-extern int debounceTimer[];
-
-extern bool sustainStringwise[];
+//extern bool sustainStringwise[];
 
 extern rhcNoteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
 extern int noteDurationFromPot;
 extern byte monoCurrPitch;
+
+extern int encMode[];
+extern int encModeBackup[];
 
 extern const int D0_pin;
 extern const int D1_pin;

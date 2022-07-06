@@ -67,13 +67,19 @@ byte dataByte2;
 byte gChannel;  //  Channel numbers are 0 based
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-  midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
-  MidiUSB.sendMIDI(noteOn);
+	//Serial.print("Sending note on, pitch = ");	
+	//Serial.println(pitch);
+
+	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
+	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-  midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
-  MidiUSB.sendMIDI(noteOff);
+	//Serial.print("Sending note off, pitch = ");	
+	//Serial.println(pitch);
+
+	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
+	MidiUSB.sendMIDI(noteOff);
 }
 
 // ***************************************** setup() ***********************************
@@ -110,11 +116,12 @@ void setup()
 
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
+
+		encMode[ii] = ENC_MODE_STRINGWISE;
 	}
 
 	InitTimers();
-
-	InitEncoderStringwise();
+	InitEncoders();
 
   //Serial.println("Hit the <Enter> key to check status of strobe input.");
   //Serial.println("Continuously checking strobe for changes.");
@@ -179,13 +186,23 @@ void loop()
 	incomingByte = 0;
 	int currStrobeVal = LOW;
 
-	// this method scans the respective string n, and updates currPressed[n] with the current fret being pressed on that string.
-	scanStrStringwise(0);
-	scanStrStringwise(1);
-	scanStrStringwise(2);
-	scanStrStringwise(3);
+	// For each string, scan. If anything changed, update .currFret and set a flag.
+	scanBasic();
 
-	ServiceTimers();
+	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		switch (encMode[ss])
+		{
+			case ENC_MODE_PRESET_SELECT:
+				break;
+
+			case ENC_MODE_STRINGWISE:
+				EncodeStringwise(ss);
+				break;
+		}
+	}
+
+	//ServiceTimers();
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1
@@ -208,7 +225,7 @@ void loop()
 		// 	if (digitalRead(rhcStr[ii].pinNumber))
 		// 	{
 		// 		rhcStr[ii].isPressed = true;
-		// 		byte pitch = currPressed[ii] + pitchOffsetStringwise[ii];
+		// 		byte pitch = currFret[ii] + pitchOffsetStringwise[ii];
 
 		// 		// Serial.print("Sending note on, pitch = ");	
 		// 		// Serial.println(pitch);

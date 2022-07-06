@@ -90,6 +90,15 @@ void ServiceTimers()
       {
         Serial.println("Encoder override was pressed");	
         encOverridePressed = true;
+
+        for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+        {
+          // backup the current encoder mode so it can be restored when override is over.
+          encModeBackup[ss] = encMode[ss];
+
+          // override the encoder mode. This will allow user to select a Preset using the fretboard.
+          encMode[ss] = ENC_MODE_PRESET_SELECT;
+        }
       }
     }
 
