@@ -1,5 +1,6 @@
 
 #include "Encoder.h"
+#include "AnalogControl.h"
 
 // ************************** InitEncoderPresetSelect() ****************************
 void InitPresetSelect()
@@ -34,7 +35,7 @@ void ExecutePreset(int preset)
 			// all strings 'stringwise' mode. Pitch: Lower range.
 			SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE);
 			SetTuning(53, 48, 43, 38);
-
+			SetAtoD_Channel(3,4,5,6);
 			break;
 
 		case 1:
@@ -54,7 +55,7 @@ void ExecutePreset(int preset)
 	}
 }
 // ***************************** SetEncoderMode() *************************************
-// sets encoder mode for all strings.
+// sets encoder mode for all strings. This is stored in the lhEncodeBasic[] structure for now.
 // sets it in the 'backup' because that's what will be used when it comes out of override mode.
 void SetEncoderMode(int e0, int e1, int e2, int e3)
 {
@@ -71,4 +72,22 @@ void SetTuning(int e0, int e1, int e2, int e3)
 	lhEncodeSw[1].pitchOffset = e1;
 	lhEncodeSw[2].pitchOffset = e2;
 	lhEncodeSw[3].pitchOffset = e3;
+}
+// ***************************** SetAtoDChannel() *************************************
+// Set channel for every A to D. 
+void SetAtoD_Channel(int p0, int p1, int p2, int p3)
+{
+	AtoD[0].channel = p0;
+	AtoD[1].channel = p1;
+	AtoD[2].channel = p2;
+	AtoD[3].channel = p3;
+}
+// ***************************** SetAtoDCcNum() *************************************
+// Set CC # for every A to D.
+void SetAtoD_CcNum(int p0, int p1, int p2, int p3)
+{
+	AtoD[0].ccNum = p0;
+	AtoD[1].ccNum = p1;
+	AtoD[2].ccNum = p2;
+	AtoD[3].ccNum = p3;
 }

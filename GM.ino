@@ -79,6 +79,23 @@ void noteOff(byte channel, byte pitch, byte velocity) {
 	MidiUSB.sendMIDI(noteOff);
 }
 
+// First parameter is the event type (0x0B = control change).
+// Second parameter is the event type, combined with the channel.
+// Third parameter is the control number number (0-119).
+// Fourth parameter is the control value (0-127).
+
+void controlChange(byte channel, byte control, byte value) {
+	midiEventPacket_t event = {0x0B, 0xB0 | channel, control, value};
+	MidiUSB.sendMIDI(event);
+
+	Serial.print("channel ");
+	Serial.print(channel);
+	Serial.print(", CC num ");
+	Serial.print(control);
+	Serial.print(", value ");
+	Serial.println(value);
+}
+
 // ***************************************** setup() ***********************************
 void setup()
 { 
@@ -140,20 +157,6 @@ bool temp;
 // ***************************************** loop() *********************************** 
 void loop()
 {
-	//outputGmCount(tempDbg);
-	//digitalWrite(D2_pin, HIGH);
-	//delay(1000);
-
-	// Serial.print(rhcStr[3].pinNumber);
-	// Serial.print(" is ");
-
-	// temp = digitalRead(rhcStr[3].pinNumber);
-
-	// if (temp)
-	// { Serial.println("pressed"); }
-	// else
-	// { Serial.println("not pressed"); }
-
 	midiEventPacket_t rx;
 	do {
 	rx = MidiUSB.read();
