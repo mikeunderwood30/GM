@@ -2,6 +2,7 @@
 #include "Encoder.h"
 #include "MIDIUSB.h"
 #include "Common.h"
+#include "AnalogControl.h"
 
 // Uses Sparkfun Pro Micro Qwiic
 
@@ -11,10 +12,6 @@
 #define FTSW_1	31
 #define FTSW_2	33
 #define FTSW_3	35
-
-#define CC_SRC_POT0	0
-#define CC_SRC_POT1	1
-#define CC_SRC_POT2	2
 
 void InitTimers();
 void StartLatchDebounce(byte str, unsigned int duration);
@@ -130,24 +127,23 @@ void setup()
 	}
 
 	InitEncoderStringwise();
-	InitEncoderPresetSelect();
+	InitPresetSelect();
 
-  //Serial.println("Hit the <Enter> key to check status of strobe input.");
-  //Serial.println("Continuously checking strobe for changes.");
-  //Serial.println("Hit the <Enter> key to do a stringwise scan on string 0.");
+	AtoD[0].atoDNum = A0;
+	AtoD[0].channel = 1;
+	AtoD[0].ccNum = 5;
 
-	// first dimension is the setup number.
-	// ccSource[0][CC_SRC_POT0].ccNum = 5;
-	// ccSource[0][CC_SRC_POT0].channel = 1;
-	// ccSource[0][CC_SRC_POT0].atodNum = A0;
+	AtoD[1].atoDNum = A1;
+	AtoD[1].channel = 2;
+	AtoD[1].ccNum = 6;
 
-	// ccSource[0][CC_SRC_POT1].ccNum = 5;
-	// ccSource[0][CC_SRC_POT1].channel = 1;
-	// ccSource[0][CC_SRC_POT1].atodNum = A1;
+	AtoD[2].atoDNum = A2;
+	AtoD[2].channel = 3;
+	AtoD[2].ccNum = 7;
 
-	// ccSource[0][CC_SRC_POT2].ccNum = 5;
-	// ccSource[0][CC_SRC_POT2].channel = 1;
-	// ccSource[0][CC_SRC_POT2].atodNum = A2;
+	AtoD[3].atoDNum = A3;
+	AtoD[3].channel = 4;
+	AtoD[3].ccNum = 8;
 }
 
 int incomingByte;
@@ -203,7 +199,7 @@ void loop()
 		switch (lhEncodeBasic[ss].encMode)
 		{
 			case ENC_MODE_PRESET_SELECT:
-				EncodePresetSelect(ss);
+				EncoderPresetSelect(ss);
 				break;
 
 			case ENC_MODE_STRINGWISE:

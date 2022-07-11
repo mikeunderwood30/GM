@@ -24,10 +24,15 @@ void CheckAtoDControls()
 		{
 			AtoD[ii].currAdcValue = adcValue;
 
-			Serial.print("A to D #");
-			Serial.print(ii);
-			Serial.print(": ");
-			Serial.println(AtoD[ii].currAdcValue);	
+			// send MIDI CC msg
+
+			if (ii != 3)	// ftse may not be connected
+			{
+				Serial.print("A to D #");
+				Serial.print(ii);
+				Serial.print(": ");
+				Serial.println(AtoD[ii].currAdcValue);
+			}
 		}
 	}
 }

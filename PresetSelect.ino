@@ -2,13 +2,13 @@
 #include "Encoder.h"
 
 // ************************** InitEncoderPresetSelect() ****************************
-void InitEncoderPresetSelect()
+void InitPresetSelect()
 { 
 	
 }
 
-// ***************************** EncodePresetSelect() *************************************
-void EncodePresetSelect(int str)
+// ***************************** EncoderPresetSelect() *************************************
+void EncoderPresetSelect(int str)
 {
 	// str is not used. Scans all 4 strings every time this is called.
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
