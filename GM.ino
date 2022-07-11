@@ -137,17 +137,17 @@ void setup()
   //Serial.println("Hit the <Enter> key to do a stringwise scan on string 0.");
 
 	// first dimension is the setup number.
-	ccSource[0][CC_SRC_POT0].ccNum = 5;
-	ccSource[0][CC_SRC_POT0].channel = 1;
-	ccSource[0][CC_SRC_POT0].atodNum = A0;
+	// ccSource[0][CC_SRC_POT0].ccNum = 5;
+	// ccSource[0][CC_SRC_POT0].channel = 1;
+	// ccSource[0][CC_SRC_POT0].atodNum = A0;
 
-	ccSource[0][CC_SRC_POT1].ccNum = 5;
-	ccSource[0][CC_SRC_POT1].channel = 1;
-	ccSource[0][CC_SRC_POT1].atodNum = A1;
+	// ccSource[0][CC_SRC_POT1].ccNum = 5;
+	// ccSource[0][CC_SRC_POT1].channel = 1;
+	// ccSource[0][CC_SRC_POT1].atodNum = A1;
 
-	ccSource[0][CC_SRC_POT2].ccNum = 5;
-	ccSource[0][CC_SRC_POT2].channel = 1;
-	ccSource[0][CC_SRC_POT2].atodNum = A2;
+	// ccSource[0][CC_SRC_POT2].ccNum = 5;
+	// ccSource[0][CC_SRC_POT2].channel = 1;
+	// ccSource[0][CC_SRC_POT2].atodNum = A2;
 }
 
 int incomingByte;

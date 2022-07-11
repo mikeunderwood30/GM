@@ -86,50 +86,9 @@ void ServiceTimers()
         }
       }
     }
-/*
-    // check A-to-D values for on-board controls, such as pots, etc
-    // read pot0
-    int adcValue = analogRead(ccSource[0][CC_SRC_POT0].atodNum);
-    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
-    if (adcValue > 127)	// should never be, but just in case.
-      adcValue = 127;
 
-    if (adcValue != currAdcValue0)
-    {
-      currAdcValue0 = adcValue;
+    CheckAtoDControls();
 
-      Serial.print("Pot 0: ");
-      Serial.println(currAdcValue0);	
-    }
-
-      // read pot1
-    adcValue = analogRead(ccSource[0][CC_SRC_POT1].atodNum);
-    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
-    if (adcValue > 127)	// should never be, but just in case.
-      adcValue = 127;
-
-    if (adcValue != currAdcValue1)
-    {
-      currAdcValue1 = adcValue;
-
-      Serial.print("Pot 1: ");
-      Serial.println(currAdcValue1);	
-    }
-
-      // read pot2
-    adcValue = analogRead(ccSource[0][CC_SRC_POT2].atodNum);
-    adcValue = adcValue >> 3;	// 0-1024 range to 0-127
-    if (adcValue > 127)	// should never be, but just in case.
-      adcValue = 127;
-
-    if (adcValue != currAdcValue2)
-    {
-      currAdcValue2 = adcValue;
-
-      Serial.print("Pot 2: ");
-      Serial.println(currAdcValue2);	
-    }
-*/
     encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
   }
 
