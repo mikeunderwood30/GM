@@ -33,20 +33,20 @@ void ExecutePreset(int preset)
 	{
 		case 0:
 			// all strings 'stringwise' mode. Pitch: Lower range.
-			SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE);
+			SetEncoderMode(ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT);
 			SetTuning(53, 48, 43, 38);
 			SetAtoD_Channel(3,4,5,6);
 			break;
 
 		case 1:
 			// all strings 'stringwise' mode. Pitch: Up one octave from preset 0.
-			SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE);
+			//SetEncoderMode(ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT);
 			SetTuning(65, 60, 55, 50);
 			break;
 
 		case 2:
 			// Same as 0 except string 3 is AC mode.
-			SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_AUTOCHORD);
+			//SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_AUTOCHORD);
 			SetTuning(53, 48, 43, 38);
 			break;
 

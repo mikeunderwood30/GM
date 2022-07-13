@@ -6,9 +6,12 @@
 #define NOTE_BUFFER_SIZE	8
 
 // Encoder modes
-#define ENC_MODE_PRESET_SELECT	0
-#define ENC_MODE_STRINGWISE	1
-#define ENC_MODE_AUTOCHORD	2	
+enum eEncMode {
+	ENC_MODE_PRESET_SELECT,
+	ENC_MODE_STRINGWISE_INT,
+	ENC_MODE_STRINGWISE_EXT,
+	ENC_MODE_AUTOCHORD
+};
 
 // Autochord
 #define AC_NUM_CHORDS 5
@@ -39,6 +42,11 @@ typedef struct
 {
 	int pinNumber;
 	bool isPressed;
+
+	// used only by ExtRHC encoder
+	bool inNoteOn;	// tracks whether noteOn or noteOff RHC trigger msg was the last received.
+	byte rhcNotePitch;	// the note value that gets recognized as a RHC event.
+	byte rhcNoteVelocity;	// stores the incoming RHC note's velocity so the encoder can use it when it sends its msg.
 } rhcStrItem;
 
 typedef struct

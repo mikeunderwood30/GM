@@ -64,16 +64,16 @@ byte dataByte2;
 byte gChannel;  //  Channel numbers are 0 based
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note on, pitch = ");	
-	Serial.println(pitch);
+	//Serial.print("Sending note on, pitch = ");	
+	//Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note off, pitch = ");	
-	Serial.println(pitch);
+	//Serial.print("Sending note off, pitch = ");	
+	//Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -88,12 +88,12 @@ void controlChange(byte channel, byte control, byte value) {
 	midiEventPacket_t event = {0x0B, 0xB0 | channel, control, value};
 	MidiUSB.sendMIDI(event);
 
-	Serial.print("channel ");
-	Serial.print(channel);
-	Serial.print(", CC num ");
-	Serial.print(control);
-	Serial.print(", value ");
-	Serial.println(value);
+	// Serial.print("channel ");
+	// Serial.print(channel);
+	// Serial.print(", CC num ");
+	// Serial.print(control);
+	// Serial.print(", value ");
+	// Serial.println(value);
 }
 
 // ***************************************** setup() ***********************************
@@ -118,34 +118,13 @@ void setup()
 	pinMode(StrobeLHC, INPUT);
 	digitalWrite(StrobeLHC, HIGH);       // turn on pullup resistor
 
-
-	rhcStr[0].pinNumber = 15;
-	rhcStr[1].pinNumber = 16;	
-	rhcStr[2].pinNumber = 10;	
-	rhcStr[3].pinNumber = 14;	
-
-	for (int ii = 0; ii < NUM_GTR_STRINGS; ii++)
-	{
-		rhcStr[ii].isPressed = false;
-
-		pinMode(rhcStr[ii].pinNumber, INPUT);
-		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
-
-		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE;
-	}
-
 	InitTimers();
 
-	// Init basic encoder
-	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
-	{
-		lhEncodeBasic[ss].currFret = -1;	// open
-		lhEncodeBasic[ss].changed = false;
-	}
-
-	InitEncoderStringwise();
+	InitEncoders();
 	InitPresetSelect();
 	InitAnalogControls();
+
+	ExecutePreset(0);
 }
 
 int incomingByte;
@@ -161,17 +140,40 @@ void loop()
 	do {
 	rx = MidiUSB.read();
 	if (rx.header != 0) {
-		// Serial.print("Header: ");
-		// Serial.println(rx.header, HEX);
-		// //Serial.print("-");
-		// Serial.println(rx.byte1, HEX);
-		// //Serial.print("-");
-		// Serial.println(rx.byte2, HEX);
-		// //Serial.print("-");
-		// Serial.println(rx.byte3, HEX);
-		AssembleSysExIn(rx.byte1);
-		AssembleSysExIn(rx.byte2);
-		AssembleSysExIn(rx.byte3);
+		//Serial.print("Header: ");
+		//Serial.print(rx.header, HEX);
+		//Serial.print("-");
+    
+		//Serial.print(rx.byte1, HEX);
+		//Serial.print("-");
+		//Serial.print(rx.byte2, HEX);
+		//Serial.print("-");
+		//Serial.println(rx.byte3, HEX);
+    
+		//AssembleSysExIn(rx.byte1);
+		//AssembleSysExIn(rx.byte2);
+		//AssembleSysExIn(rx.byte3);
+
+		bool isPressed = rx.byte1 == 0x90 ? true : false;
+
+		switch (rx.byte2)
+		{
+			case 0x40:
+				rhcStr[0].inNoteOn = isPressed;
+				break;
+
+			case 0x41:
+				rhcStr[1].inNoteOn = isPressed;
+				break;
+
+			case 0x42:
+				rhcStr[2].inNoteOn = isPressed;
+				break;
+
+			case 0x43:
+				rhcStr[3].inNoteOn = isPressed;
+				break;
+		}
 	}
 	} while (rx.header != 0);
 
@@ -190,7 +192,9 @@ void loop()
 				EncoderPresetSelect(ss);
 				break;
 
-			case ENC_MODE_STRINGWISE:
+			case ENC_MODE_STRINGWISE_INT:
+			case ENC_MODE_STRINGWISE_EXT:
+				EncodePreprocess(ss);
 				EncodeStringwise(ss);
 				break;
 
@@ -200,7 +204,7 @@ void loop()
 		}
 	}
 
-	ServiceTimers();
+	//ServiceTimers();
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1

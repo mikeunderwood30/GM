@@ -43,18 +43,30 @@ lhEncodeSwItem lhEncodeSw[NUM_GTR_STRINGS];
 int noteDurationFromPot;
 byte monoCurrPitch;
 
-// ************************** InitEncoderStringwise() ****************************
-void InitEncoderStringwise()
+// ************************** InitEncoders() ****************************
+void InitEncoders()
 {
-	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
-	{
-		lhEncodeSw[ss].currFret = -1;
-	}
+	rhcStr[0].pinNumber = 15;
+	rhcStr[1].pinNumber = 16;	
+	rhcStr[2].pinNumber = 10;	
+	rhcStr[3].pinNumber = 14;	
 
-	ExecutePreset(0);
+	for (int ii = 0; ii < NUM_GTR_STRINGS; ii++)
+	{
+		pinMode(rhcStr[ii].pinNumber, INPUT);
+		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
+
+		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE_EXT;
+		lhEncodeBasic[ii].currFret = -1;	// open
+		lhEncodeBasic[ii].changed = false;
+
+		lhEncodeSw[ii].currFret = -1;
+		rhcStr[ii].isPressed = false;
+	}
 }
-// ***************************** EncodeStringwise() *************************************
-void EncodeStringwise(int ss)
+// ***************************** EncodePreprocess() *************************************
+// assumes that scanBasic() was run prior
+void EncodePreprocess(int ss)
 {
 	if (lhEncodeBasic[ss].changed)
 	{
@@ -82,11 +94,17 @@ void EncodeStringwise(int ss)
 
 		lhEncodeBasic[ss].changed = false;
 	}
-
+}
+// ***************************** EncodeStringwise() *************************************
+// assumes that EncodePreprocess() was run prior
+void EncodeStringwise(int ss)
+{
 	if (!rhcStr[ss].isPressed)		// if it wasn't pressed,
 	{
-		if (digitalRead(rhcStr[ss].pinNumber))		// and now it is,
+		// Serial.print(".");	
+		if (RhcCurrentlyPressed(ss))		// and now it is,
 		{	
+			// Serial.println("now it is");	
 			rhcStr[ss].isPressed = true;	// so it only does this once
 			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
 			
@@ -96,8 +114,10 @@ void EncodeStringwise(int ss)
 	}
 	else	// if it was pressed,
 	{
-		if (!digitalRead(rhcStr[ss].pinNumber))		// no longer is
+		// Serial.println("was pressed");
+		if (!RhcCurrentlyPressed(ss))		// no longer is
 		{	
+			// Serial.println("no longer");	
 			rhcStr[ss].isPressed = false;
 
 			noteOff(0, lhEncodeSw[ss].msgPitch, 64); 	// Channel, pitch, velocity
@@ -105,6 +125,7 @@ void EncodeStringwise(int ss)
 		}
 		else	// still is
 		{
+			// Serial.println("still is");	
 			// if LH has changed
 			if (lhEncodeSw[ss].changed)
 			{	
@@ -123,7 +144,20 @@ void EncodeStringwise(int ss)
 		}
 	}
 }
-
+// ***************************** RhcCurrentlyPressed() *************************************
+// called from EncodeStringwise
+bool RhcCurrentlyPressed(int ss)
+{
+	if (lhEncodeBasic[ss].encMode == ENC_MODE_STRINGWISE_INT)
+	{
+		// ternary operator
+		return(digitalRead(rhcStr[ss].pinNumber) ? true : false);
+	}
+	else	// must be ENC_MODE_STRINGWISE_EXT
+	{
+		return(rhcStr[ss].inNoteOn ? true : false);
+	}
+}
 // ***************************** scanBasic() *************************************
 // This scanner is common to all encoders.
 // For each string, scan and determine what is pressed. If something has changed, set a flag.
