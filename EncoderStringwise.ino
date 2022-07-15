@@ -56,11 +56,13 @@ void InitEncoders()
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE_EXT;
-		lhEncodeBasic[ii].currFret = -1;	// open
+		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;
+		lhEncodeBasic[ii].currFret = -1;	// init to 'open'
 		lhEncodeBasic[ii].changed = false;
 
 		lhEncodeSw[ii].currFret = -1;
+		lhEncodeSw[ii].changed = false;
+
 		rhcStr[ii].isPressed = false;
 	}
 }
@@ -156,6 +158,32 @@ bool RhcCurrentlyPressed(int ss)
 	else	// must be ENC_MODE_STRINGWISE_EXT
 	{
 		return(rhcStr[ss].inNoteOn ? true : false);
+	}
+}
+// ***************************** EncodeStringwiseOrgan() *************************************
+// since we skip the PreProcess() step, have to use lhEncodeBasic[].currFret not lhEncodeSw[].currFret
+void EncodeStringwiseOrgan(int ss)
+{
+	if (lhEncodeBasic[ss].changed)
+	{
+		if (lhEncodeBasic[ss].currFret != -1)		// ignore if 'open'
+		{
+			lhEncodeSw[ss].currFret = lhEncodeBasic[ss].currFret;
+
+			if (lhEncodeSw[ss].msgPitch != 0)
+			{
+				noteOff(0, lhEncodeSw[ss].msgPitch, 64); 	// Channel, pitch, velocity
+				MidiUSB.flush();
+			}
+
+			// calc the the new fret value and store it so a noteOff can be sent
+			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
+			// send a noteOn for the new fret
+			noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
+			MidiUSB.flush();
+		}
+
+		lhEncodeBasic[ss].changed = false;
 	}
 }
 // ***************************** scanBasic() *************************************
