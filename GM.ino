@@ -208,7 +208,7 @@ void loop()
 		}
 	}
 
-	//ServiceTimers();
+	ServiceTimers();
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1

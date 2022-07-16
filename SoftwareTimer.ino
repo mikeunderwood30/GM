@@ -1,4 +1,5 @@
 #include "Encoder.h"
+#include "Timer.h"
 
 //void sendChannelMsg(byte midiStatus, byte data1, byte data2);
 
@@ -14,6 +15,8 @@ unsigned int encOverrideTimer;
 #define PULSE_TIMER_RELOAD  20
 #define ENC_OVERRIDE_TIMER_RELOAD  20
 
+noteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
+
 // ***************************************** InitTimers()() ***********************************
 // called from Setup()
 void InitTimers()
@@ -24,7 +27,21 @@ void InitTimers()
   pulseTimer = PULSE_TIMER_RELOAD;
   encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
 }
+// ***************************************** AddNoteToTimerPool() ***********************************
+void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
+{ 
+    for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
+    {
+      if (!noteBuffer[ii].isActive)
+      {
+        noteBuffer[ii].msgPitch = msgPitch;
+        noteBuffer[ii].count = duration;
+        noteBuffer[ii].isActive = true;
 
+        break;
+      }
+    }
+}
 // ***************************************** ServiceTimers() ************************************
 // called from loop()
 void ServiceTimers()
@@ -46,8 +63,23 @@ void ServiceTimers()
 
   // 1 ms has elapsed
 
-  // plotter will have a '0' entry every 1 ms.
-  //Serial.print(0);  
+    // plotter will have a '0' entry every 1 ms.
+  //Serial.print(0);
+
+// ----------------- One-shot --------------  
+
+  for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
+  {
+    if (noteBuffer[ii].isActive)
+    {
+      noteBuffer[ii].count--;
+      if (noteBuffer[ii].count == 0)
+      {
+        noteOff(0, noteBuffer[ii].msgPitch, 64); 	// Channel, pitch, velocity
+        noteBuffer[ii].isActive = false;
+      }
+    }
+  }
 
 // ----------------- Cyclical --------------
 
@@ -102,25 +134,4 @@ void ServiceTimers()
     pulseTimer = PULSE_TIMER_RELOAD;
   }
 }
-/*
-// ***************************************** AddNoteToTimerPool() ***********************************
-void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
-{ 
-    // monoRhcNoteDuration.count = duration;
-    // monoRhcNoteDuration.msgPitch = msgPitch;
-    // monoRhcNoteDuration.isActive = true;
 
-    //noteBuffer[NOTE_BUFFER_SIZE];
-    for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
-    {
-      if (!noteBuffer[ii].isActive)
-      {
-        noteBuffer[ii].msgPitch = msgPitch;
-        noteBuffer[ii].count = duration;
-        noteBuffer[ii].isActive = true;
-
-        break;
-      }
-    }
-}
-*/

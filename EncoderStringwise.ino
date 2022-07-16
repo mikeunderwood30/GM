@@ -56,7 +56,7 @@ void InitEncoders()
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_INT;    // ENC_MODE_STRINGWISE_ORGAN
+		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;    //  ENC_MODE_STRINGWISE_INT
 		lhEncode[ii].currFret = -1;	// init to 'open'
 		lhEncode[ii].changed = false;
 
@@ -145,16 +145,19 @@ void EncodeStringwiseOrgan(int ss)
 	{
 		if (!lhEncode[ss].isOpen)		// ignore if 'open'
 		{
-			if (lhEncode[ss].msgPitch != 0)
-			{
-				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
-				MidiUSB.flush();
-			}
+			// if (lhEncode[ss].msgPitch != 0)
+			// {
+			// 	noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+			// 	MidiUSB.flush();
+			// }
 
 			// calc the the new fret value and store it so a noteOff can be sent
-			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			// send a noteOn for the new fret
-			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+			// lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+			//noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+
+			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+			AddNoteToTimerPool(200, pitch);
+			noteOn(0, pitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
 		}
 
