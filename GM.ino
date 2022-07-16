@@ -186,7 +186,7 @@ void loop()
 
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		switch (lhEncodeBasic[ss].encMode)
+		switch (lhEncode[ss].encMode)
 		{
 			case ENC_MODE_PRESET_SELECT:
 				EncoderPresetSelect(ss);
@@ -194,7 +194,7 @@ void loop()
 
 			case ENC_MODE_STRINGWISE_INT:
 			case ENC_MODE_STRINGWISE_EXT:
-				EncodePreprocess(ss);
+				//EncodePreprocess(ss);
 				EncodeStringwise(ss);
 				break;
 

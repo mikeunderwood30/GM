@@ -30,13 +30,13 @@ extern void InitEncoders();
 
 // } rhcNoteDurationItem;
 
-typedef struct
-{
-	int currFret;	// has a value of -1 when string is open
-	bool changed;	// set if currFret has changed.
-	int encMode;	// the current encoder mode, unless 'override' is in effect.
-	int encModeBackup;	// for saving encMode value when override is in effect.
-} lhcBasicItem;
+// typedef struct
+// {
+// 	int currFret;	// has a value of -1 when string is open
+// 	bool changed;	// set if currFret has changed.
+// 	int encMode;	// the current encoder mode, unless 'override' is in effect.
+// 	int encModeBackup;	// for saving encMode value when override is in effect.
+// } lhcBasicItem;
 
 // used for per-string capacitive touch sensor
 typedef struct
@@ -56,10 +56,13 @@ typedef struct
 	int channel;
 	// bool sustain;
 
-	int currFret;	// never has a value of -1
+	int currFret;	// can never have a value of -1
+	bool isOpen;
 	bool changed;	// set if currFret has changed.
+	int encMode;	// the current encoder mode, unless 'override' is in effect.
+	int encModeBackup;	// for saving encMode value when override is in effect.
 	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
-} lhEncodeSwItem;
+} lhEncodeItem;
 
 extern int noteDurationFromPot;
 extern byte monoCurrPitch;
@@ -75,7 +78,7 @@ extern const int StrobeLHC;
 extern const int EncodeOverrideButton;
 
 extern rhcStrItem rhcStr[];
-extern lhcBasicItem lhEncodeBasic[];
-extern lhEncodeSwItem lhEncodeSw[];
+//extern lhcBasicItem lhEncodeBasic[];
+extern lhEncodeItem lhEncode[];
 
 #endif

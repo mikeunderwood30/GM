@@ -37,8 +37,8 @@ const int EncodeOverrideButton = 9;	// p12
 // ------------------------------------ Encoder data ---------------------------
 
 rhcStrItem rhcStr[NUM_GTR_STRINGS];
-lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
-lhEncodeSwItem lhEncodeSw[NUM_GTR_STRINGS];
+//lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
+lhEncodeItem lhEncode[NUM_GTR_STRINGS];
 
 int noteDurationFromPot;
 byte monoCurrPitch;
@@ -56,62 +56,30 @@ void InitEncoders()
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		lhEncodeBasic[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;
-		lhEncodeBasic[ii].currFret = -1;	// init to 'open'
-		lhEncodeBasic[ii].changed = false;
+		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_INT;    // ENC_MODE_STRINGWISE_ORGAN
+		lhEncode[ii].currFret = -1;	// init to 'open'
+		lhEncode[ii].changed = false;
 
-		lhEncodeSw[ii].currFret = -1;
-		lhEncodeSw[ii].changed = false;
+		//lhEncode[ii].currFret = -1;
+		//lhEncode[ii].changed = false;
 
 		rhcStr[ii].isPressed = false;
-	}
-}
-// ***************************** EncodePreprocess() *************************************
-// assumes that scanBasic() was run prior
-void EncodePreprocess(int ss)
-{
-	if (lhEncodeBasic[ss].changed)
-	{
-		// Serial.print(lhEncodeBasic[ss].currFret);
-		// Serial.print(", ");
-		// Serial.println(lhEncodeSw[ss].currFret);
-
-		if (lhEncodeBasic[ss].currFret != -1)		// ignore if 'open'
-		{
-			if (lhEncodeSw[ss].currFret != lhEncodeBasic[ss].currFret)
-			{
-				lhEncodeSw[ss].currFret = lhEncodeBasic[ss].currFret;
-
-				// This 'changed' flag is only for the case where something changes while RHC is pressed.
-				// If we set it even when RHC is not pressed, we'll get an extra off/on when it does get pressed.
-				if (rhcStr[ss].isPressed)
-				{
-					lhEncodeSw[ss].changed = true;
-				}
-
-				// Serial.print("Current fret is now ");	
-				// Serial.println(lhEncodeSw[ss].currFret);
-			}
-		}
-
-		lhEncodeBasic[ss].changed = false;
 	}
 }
 // ***************************** EncodeStringwise() *************************************
 // assumes that EncodePreprocess() was run prior
 void EncodeStringwise(int ss)
 {
-	if (!rhcStr[ss].isPressed)		// if it wasn't pressed,
+	if (!rhcStr[ss].isPressed)		// if RHC wasn't pressed,
 	{
-		// Serial.print(".");	
 		if (RhcCurrentlyPressed(ss))		// and now it is,
 		{	
-			// Serial.println("now it is");	
 			rhcStr[ss].isPressed = true;	// so it only does this once
-			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
+
+			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 			
-			noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
-			MidiUSB.flush();	
+			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+			MidiUSB.flush();
 		}
 	}
 	else	// if it was pressed,
@@ -122,26 +90,35 @@ void EncodeStringwise(int ss)
 			// Serial.println("no longer");	
 			rhcStr[ss].isPressed = false;
 
-			noteOff(0, lhEncodeSw[ss].msgPitch, 64); 	// Channel, pitch, velocity
-			MidiUSB.flush();
+			if (lhEncode[ss].msgPitch != 0)
+			{
+				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+				MidiUSB.flush();
+			}
+			else{
+				Serial.println("msgPitch was 0 so note off not sent");	
+			}
 		}
 		else	// still is
 		{
 			// Serial.println("still is");	
 			// if LH has changed
-			if (lhEncodeSw[ss].changed)
+			if (lhEncode[ss].changed)
 			{	
-				lhEncodeSw[ss].changed = false;	// so does this once only
+				lhEncode[ss].changed = false;	// so does this once only
 
-				// send a noteOff for the fret that is sounding
-				noteOff(0, lhEncodeSw[ss].msgPitch, 64); 	// Channel, pitch, velocity
-				MidiUSB.flush();
+				if (!lhEncode[ss].isOpen)		// don't change if 'open'
+				{
+					// send a noteOff for the fret that is sounding
+					noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+					MidiUSB.flush();
 
-				// calc the the new fret value and store it so a noteOff can be sent
-				lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
-				// send a noteOn for the new fret
-				noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
-				MidiUSB.flush();
+					// calc the the new fret value and store it so a noteOff can be sent
+					lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+					// send a noteOn for the new fret
+					noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+					MidiUSB.flush();
+				}
 			}
 		}
 	}
@@ -150,7 +127,7 @@ void EncodeStringwise(int ss)
 // called from EncodeStringwise
 bool RhcCurrentlyPressed(int ss)
 {
-	if (lhEncodeBasic[ss].encMode == ENC_MODE_STRINGWISE_INT)
+	if (lhEncode[ss].encMode == ENC_MODE_STRINGWISE_INT)
 	{
 		// ternary operator
 		return(digitalRead(rhcStr[ss].pinNumber) ? true : false);
@@ -161,29 +138,27 @@ bool RhcCurrentlyPressed(int ss)
 	}
 }
 // ***************************** EncodeStringwiseOrgan() *************************************
-// since we skip the PreProcess() step, have to use lhEncodeBasic[].currFret not lhEncodeSw[].currFret
+// since we skip the PreProcess() step, have to use lhEncode[].currFret not lhEncode[].currFret
 void EncodeStringwiseOrgan(int ss)
 {
-	if (lhEncodeBasic[ss].changed)
+	if (lhEncode[ss].changed)
 	{
-		if (lhEncodeBasic[ss].currFret != -1)		// ignore if 'open'
+		if (!lhEncode[ss].isOpen)		// ignore if 'open'
 		{
-			lhEncodeSw[ss].currFret = lhEncodeBasic[ss].currFret;
-
-			if (lhEncodeSw[ss].msgPitch != 0)
+			if (lhEncode[ss].msgPitch != 0)
 			{
-				noteOff(0, lhEncodeSw[ss].msgPitch, 64); 	// Channel, pitch, velocity
+				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
 				MidiUSB.flush();
 			}
 
 			// calc the the new fret value and store it so a noteOff can be sent
-			lhEncodeSw[ss].msgPitch = lhEncodeSw[ss].currFret + lhEncodeSw[ss].pitchOffset;
+			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 			// send a noteOn for the new fret
-			noteOn(0, lhEncodeSw[ss].msgPitch, 64);   // Channel, pitch, velocity
+			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
 		}
 
-		lhEncodeBasic[ss].changed = false;
+		lhEncode[ss].changed = false;
 	}
 }
 // ***************************** scanBasic() *************************************
@@ -199,10 +174,12 @@ void scanBasic()
 		{
 			if (ff == -1)
 			{
-				if (ff != lhEncodeBasic[ss].currFret)
+				// Nothing was pressed. String is open. But if it was pressed before, we still need to 
+				// record the change.
+				if (ff != lhEncode[ss].currFret)
 				{
-					lhEncodeBasic[ss].changed = true;
-					lhEncodeBasic[ss].currFret = ff;
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = true;
 				}
 
 				break;
@@ -216,7 +193,8 @@ void scanBasic()
 			outputGmCount(gmMapByString[ss][ff]);
 			//delay(3000);
 
-			//check whether this fret seems to be pressed.
+			// At this point, ff has not reached -1.
+			// Check whether this fret seems to be pressed.
 			if (digitalRead(StrobeLHC) == LOW)
 			{		
 				//Serial.print("detected key pressed on string ");
@@ -227,10 +205,11 @@ void scanBasic()
 				//Serial.print("Count = ");
 				//Serial.println(gmMapByString[ss][ff]);
 				
-				if (ff != lhEncodeBasic[ss].currFret)
+				if (ff != lhEncode[ss].currFret)
 				{
-					lhEncodeBasic[ss].changed = true;
-					lhEncodeBasic[ss].currFret = ff;
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = false;
+					lhEncode[ss].currFret = ff;
 				}
 				// No need to check frets below this one.
 				break;
@@ -242,9 +221,9 @@ void scanBasic()
 // In this AC mode, notes are 'always on'. User needs to have a means of manually controlling the volume, such as a pedal.
 void EncodeAutochord(int ss)
 {
-	if (lhEncodeBasic[ss].changed && lhEncodeBasic[ss].currFret != -1)
+	if (lhEncode[ss].changed && lhEncode[ss].currFret != -1)
 	{
-		int index = lhEncodeBasic[ss].currFret;
+		int index = lhEncode[ss].currFret;
     Serial.print("New AC chord. Index = ");
     Serial.println(index);
       
@@ -256,6 +235,6 @@ void EncodeAutochord(int ss)
 			// store them so can send noteOffs later. 
 		}
 
-		lhEncodeBasic[ss].changed = false;
+		lhEncode[ss].changed = false;
 	}
 }

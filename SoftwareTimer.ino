@@ -65,7 +65,7 @@ void ServiceTimers()
 
         for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
         {
-          lhEncodeBasic[ss].encMode = lhEncodeBasic[ss].encModeBackup;
+          lhEncode[ss].encMode = lhEncode[ss].encModeBackup;
         }
       }
     }
@@ -79,10 +79,10 @@ void ServiceTimers()
         for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
         {
           // backup the current encoder mode so it can be restored when override is over.
-          lhEncodeBasic[ss].encModeBackup = lhEncodeBasic[ss].encMode;
+          lhEncode[ss].encModeBackup = lhEncode[ss].encMode;
 
           // override the encoder mode. This will allow user to select a Preset using the fretboard.
-          lhEncodeBasic[ss].encMode = ENC_MODE_PRESET_SELECT;
+          lhEncode[ss].encMode = ENC_MODE_PRESET_SELECT;
         }
       }
     }
