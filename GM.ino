@@ -14,12 +14,21 @@
 #define FTSW_3	35
 
 void InitTimers();
-void StartLatchDebounce(byte str, unsigned int duration);
 void ServiceTimers();
 
-void outputGmCount(byte); // test code
+void EncodeGatedAutoRHC(int);
+void PickGatedStrings();
+void SetInNoteOnFlag(byte, bool);
+void EncodeStringwise(int);
+void EncodeStringwiseOrgan(int);
+void scanBasic();
+void EncodeAutochord(int);
 
-void sendChannelMsg(byte midiStatus, byte data1, byte data2);
+void InitPresetSelect();
+void ExecutePreset(int);
+void EncoderPresetSelect(int);
+
+void InitAnalogControls();
 
 // --------------------- Debug ---------------------------
 
@@ -28,10 +37,6 @@ bool dbgMidiOut = true;
  
  // ------------------------ Arduino hardware ----------------------------------
 int ledPin = 13;
-
-//const int numDigitalIns = 4;
-// PinDebounce debounce[numDigitalIns] = {29, false, false, 0, 31, false, false, 0, 33, false, false, 0, 35, false, false, 0};
-//unsigned long debounceDelay = 5;	// milliseconds
 
 // --------------------- footswitch definitions ----------------------
 const int FTSW_ADVANCE = 3;
@@ -64,16 +69,16 @@ byte dataByte2;
 byte gChannel;  //  Channel numbers are 0 based
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note on, pitch = ");	
-	Serial.println(pitch);
+	//Serial.print("Sending note on, pitch = ");	
+	//Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note off, pitch = ");	
-	Serial.println(pitch);
+	//Serial.print("Sending note off, pitch = ");	
+	//Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -128,53 +133,53 @@ void setup()
 }
 
 int incomingByte;
-int prevStrobeVal = LOW;
-float prevVal[NUM_GTR_STRINGS] = {0,0,0,0};
 
-bool temp;
+static byte clockDivide = 6;
 
 // ***************************************** loop() *********************************** 
 void loop()
 {
+	bool isPressed = false;
+
 	midiEventPacket_t rx;
 	do {
-	rx = MidiUSB.read();
-	if (rx.header != 0) {
-		//Serial.print("Header: ");
-		//Serial.print(rx.header, HEX);
-		//Serial.print("-");
-    
-		//Serial.print(rx.byte1, HEX);
-		//Serial.print("-");
-		//Serial.print(rx.byte2, HEX);
-		//Serial.print("-");
-		//Serial.println(rx.byte3, HEX);
-    
-		//AssembleSysExIn(rx.byte1);
-		//AssembleSysExIn(rx.byte2);
-		//AssembleSysExIn(rx.byte3);
+		rx = MidiUSB.read();
+		if (rx.header != 0) {
+			//Serial.print("Header: ");
+			//Serial.print(rx.header, HEX);
+			//Serial.print("-");
+		
+			//Serial.println(rx.byte1, HEX);
+			//Serial.print("-");
+			//Serial.print(rx.byte2, HEX);
+			//Serial.print("-");
+			//Serial.println(rx.byte3, HEX);
+		
+			//AssembleSysExIn(rx.byte1);
+			//AssembleSysExIn(rx.byte2);
+			//AssembleSysExIn(rx.byte3);
 
-		bool isPressed = rx.byte1 == 0x90 ? true : false;
+			switch (rx.byte1)
+			{
+				case 0x90:
+					SetInNoteOnFlag(rx.byte2, true);
+					break;
 
-		switch (rx.byte2)
-		{
-			case 0x40:
-				rhcStr[0].inNoteOn = isPressed;
-				break;
+				case 0x80:
+					SetInNoteOnFlag(rx.byte2, false);
+					break;
 
-			case 0x41:
-				rhcStr[1].inNoteOn = isPressed;
-				break;
-
-			case 0x42:
-				rhcStr[2].inNoteOn = isPressed;
-				break;
-
-			case 0x43:
-				rhcStr[3].inNoteOn = isPressed;
-				break;
+				case 0xF8:	// MIDI clock
+					clockDivide--;
+					if (clockDivide <= 0)
+					{
+            			//Serial.print("-");
+						PickGatedStrings();
+						clockDivide = 6;
+					}
+					break;
+			}
 		}
-	}
 	} while (rx.header != 0);
 
   
@@ -196,6 +201,12 @@ void loop()
 			case ENC_MODE_STRINGWISE_EXT:
 				//EncodePreprocess(ss);
 				EncodeStringwise(ss);
+				break;
+
+			case ENC_MODE_GATED_AUTO_RHC:
+				// don't need to do anything beyond scanBasic().
+				// Picking is driven by MIDI clocks, gated by the RH touch pads.
+				//EncodeGatedAutoRHC(ss);
 				break;
 
 			case ENC_MODE_STRINGWISE_ORGAN:

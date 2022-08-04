@@ -2,7 +2,7 @@
 #include "Encoder.h"
 #include "AnalogControl.h"
 
-// ************************** InitEncoderPresetSelect() ****************************
+// ************************** InitPresetSelect() ****************************
 void InitPresetSelect()
 { 
 	
@@ -32,21 +32,18 @@ void ExecutePreset(int preset)
 	switch (preset)
 	{
 		case 0:
-			// all strings 'stringwise' mode. Pitch: Lower range.
-			SetEncoderMode(ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT);
-			SetTuning(53, 48, 43, 38);
-			SetAtoD_Channel(3,4,5,6);
+			SetEncoderMode(ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN);
 			break;
 
-		case 1:
-			// all strings 'stringwise' mode. Pitch: Up one octave from preset 0.
-			//SetEncoderMode(ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT);
+		case 0:
+			SetEncoderMode(ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC);
+			break;
+
+		case 1:	// octave up
 			SetTuning(65, 60, 55, 50);
 			break;
 
-		case 2:
-			// Same as 0 except string 3 is AC mode.
-			//SetEncoderMode(ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_STRINGWISE, ENC_MODE_AUTOCHORD);
+		case 2:	// octave down
 			SetTuning(53, 48, 43, 38);
 			break;
 

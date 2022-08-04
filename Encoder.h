@@ -10,6 +10,7 @@ enum eEncMode {
 	ENC_MODE_PRESET_SELECT,
 	ENC_MODE_STRINGWISE_INT,
 	ENC_MODE_STRINGWISE_EXT,
+	ENC_MODE_GATED_AUTO_RHC,
 	ENC_MODE_STRINGWISE_ORGAN,
 	ENC_MODE_AUTOCHORD
 };
@@ -17,8 +18,6 @@ enum eEncMode {
 // Autochord
 #define AC_NUM_CHORDS 5
 #define AC_NOTES_PER_CHORD 4
-
-extern void InitEncoders();
 
 // used for timing note duration
 // typedef struct
@@ -56,7 +55,7 @@ typedef struct
 	int channel;
 	// bool sustain;
 
-	int currFret;	// can never have a value of -1
+	int currFret;	// can never have a value of -1. Value ignored when isOpen == true.
 	bool isOpen;
 	bool changed;	// set if currFret has changed.
 	int encMode;	// the current encoder mode, unless 'override' is in effect.

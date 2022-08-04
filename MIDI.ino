@@ -102,6 +102,7 @@ void checkSerialAvailable()
   }
 }
 */
+/*
 // ***************************************** processPrgChg() ************************************
 void processPrgChg(byte channel, byte prgChgValueIn)
 {
@@ -121,14 +122,12 @@ void processChannelNoteMsg(byte statusByte, byte channel, byte dataByte1, byte d
     Serial.println(dataByte1);
   }
 }
-
 // ***************************************** processPitchbendMsg() ************************************
 void processPitchbendMsg(byte statusByte, byte channel, byte dataByte1, byte dataByte2)
 {
   byte statusWithChannel;
   
   //Serial.print("processPitchbendMsg(). dataByte1 = ");
-  /*
   if (gEchoChannelMsg)
   {
     statusWithChannel = statusByte + channel;
@@ -137,7 +136,6 @@ void processPitchbendMsg(byte statusByte, byte channel, byte dataByte1, byte dat
   else
   {
   }
-  */
 }
 // ***************************************** processControlChangeMsg() ************************************
 void processControlChangeMsg(byte statusByte, byte channel, byte dataByte1, byte dataByte2)
@@ -146,7 +144,6 @@ void processControlChangeMsg(byte statusByte, byte channel, byte dataByte1, byte
   
   //Serial.print("processControlChangeMsg(). dataByte1 = ");
 
-  /*
   if (gEchoChannelMsg)
   {
     statusWithChannel = statusByte + channel;
@@ -161,8 +158,9 @@ void processControlChangeMsg(byte statusByte, byte channel, byte dataByte1, byte
   else
   {
   }
-  */
 }
+*/
+/*
 // ***************************************** sendChannelMsg() ************************************
 void sendChannelMsg(byte midiStatus, byte data1, byte data2)
 {
@@ -186,5 +184,5 @@ void sendChannelMsg(byte midiStatus, byte data1, byte data2)
     Serial.println();
   }
 }
-
+*/
 

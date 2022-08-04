@@ -6,7 +6,7 @@
 #include "Encoder.h"
 
 void outputGmCount(byte);
-void ExecutePreset(int);
+//void ExecutePreset(int);
 
 int gmMapByString[4][16] = {
 61, 59, 63, 57, 62, 56, 58, 60, 21, 19, 23, 17, 22, 16, 18, 20,
@@ -56,8 +56,9 @@ void InitEncoders()
 		pinMode(rhcStr[ii].pinNumber, INPUT);
 		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;    //  ENC_MODE_STRINGWISE_INT
-		lhEncode[ii].currFret = -1;	// init to 'open'
+		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
+		lhEncode[ii].currFret = 0;
+		lhEncode[ii].isOpen = false;
 		lhEncode[ii].changed = false;
 
 		//lhEncode[ii].currFret = -1;
@@ -67,7 +68,8 @@ void InitEncoders()
 	}
 }
 // ***************************** EncodeStringwise() *************************************
-// assumes that EncodePreprocess() was run prior
+// Supports the following encoder modes: ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_EXT.
+// These require both left and right hand actions.
 void EncodeStringwise(int ss)
 {
 	if (!rhcStr[ss].isPressed)		// if RHC wasn't pressed,
@@ -138,23 +140,13 @@ bool RhcCurrentlyPressed(int ss)
 	}
 }
 // ***************************** EncodeStringwiseOrgan() *************************************
-// since we skip the PreProcess() step, have to use lhEncode[].currFret not lhEncode[].currFret
+// Supports the following encoder modes: ENC_MODE_STRINGWISE_ORGAN.
 void EncodeStringwiseOrgan(int ss)
 {
 	if (lhEncode[ss].changed)
 	{
 		if (!lhEncode[ss].isOpen)		// ignore if 'open'
 		{
-			// if (lhEncode[ss].msgPitch != 0)
-			// {
-			// 	noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
-			// 	MidiUSB.flush();
-			// }
-
-			// calc the the new fret value and store it so a noteOff can be sent
-			// lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			//noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
-
 			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 			AddNoteToTimerPool(200, pitch);
 			noteOn(0, pitch, 64);   // Channel, pitch, velocity
@@ -164,11 +156,33 @@ void EncodeStringwiseOrgan(int ss)
 		lhEncode[ss].changed = false;
 	}
 }
+// ***************************** EncodeAutochord() *************************************
+// In this AC mode, notes are 'always on'. User needs to have a means of manually controlling the volume, such as a pedal.
+void EncodeAutochord(int ss)
+{
+	if (lhEncode[ss].changed && lhEncode[ss].currFret != -1)
+	{
+		int index = lhEncode[ss].currFret;
+    Serial.print("New AC chord. Index = ");
+    Serial.println(index);
+      
+		if (index < AC_NUM_CHORDS)
+		{
+			// send note offs for any existing chord
+			// look up notes based on index.
+			// send noteOns for these notes.
+			// store them so can send noteOffs later. 
+		}
+
+		lhEncode[ss].changed = false;
+	}
+}
+// ******************************************** Support Methods *********************************************
+
 // ***************************** scanBasic() *************************************
-// This scanner is common to all encoders.
+// Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
 // For each string, scan and determine what is pressed. If something has changed, set a flag.
-// Scan top-to-bottom for each string, and stop when we find one pressed, since we observe
-// a 'highest fretted note wins' rule per string.
+// Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
 void scanBasic()
 {
 	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
@@ -220,24 +234,49 @@ void scanBasic()
 		}
 	}
 }
-// ***************************** EncodeAutochord() *************************************
-// In this AC mode, notes are 'always on'. User needs to have a means of manually controlling the volume, such as a pedal.
-void EncodeAutochord(int ss)
+// ***************************** PickGatedStrings() *************************************
+// Called from loop(), where we read MIDI in. 
+// Called every 16th note when we are receiving MIDI clks.
+void PickGatedStrings()
 {
-	if (lhEncode[ss].changed && lhEncode[ss].currFret != -1)
+	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		int index = lhEncode[ss].currFret;
-    Serial.print("New AC chord. Index = ");
-    Serial.println(index);
-      
-		if (index < AC_NUM_CHORDS)
+		// if gated by RH
+		if (digitalRead(rhcStr[ss].pinNumber))
 		{
-			// send note offs for any existing chord
-			// look up notes based on index.
-			// send noteOns for these notes.
-			// store them so can send noteOffs later. 
+			// retrieve the current LH value and send a timed msg.
+			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+			AddNoteToTimerPool(200, pitch);
+			noteOn(0, pitch, 64);   // Channel, pitch, velocity
+			MidiUSB.flush();
 		}
-
-		lhEncode[ss].changed = false;
 	}
 }
+// ***************************** SetInNoteOnFlag() *************************************
+// Called from loop(), where we read MIDI in. When we get a noteOn having a certain pitch, we set the .inNoteOn flag
+// for the associated string, so the ENC_MODE_STRINGWISE_EXT encoder can use it (if the string happens to be in that enc mode).
+void SetInNoteOnFlag(byte pitchByte, bool isPressed)
+{
+	switch (pitchByte)
+	{
+		case 0x40:
+			rhcStr[0].inNoteOn = isPressed;
+			break;
+
+		case 0x41:
+			rhcStr[1].inNoteOn = isPressed;
+			break;
+
+		case 0x42:
+			rhcStr[2].inNoteOn = isPressed;
+			break;
+
+		case 0x43:
+			rhcStr[3].inNoteOn = isPressed;
+			break;
+	}
+}
+// ***************************** EncodeGatedAutoRHC() *************************************
+// void EncodeGatedAutoRHC(int ss)
+// {
+// }
