@@ -40,7 +40,7 @@ enum eEncMode {
 // used for per-string capacitive touch sensor
 typedef struct
 {
-	int pinNumber;
+	//int pinNumber;
 	bool isPressed;
 
 	// used only by ExtRHC encoder

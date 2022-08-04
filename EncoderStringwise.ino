@@ -46,15 +46,15 @@ byte monoCurrPitch;
 // ************************** InitEncoders() ****************************
 void InitEncoders()
 {
-	rhcStr[0].pinNumber = 15;
-	rhcStr[1].pinNumber = 16;	
-	rhcStr[2].pinNumber = 10;	
-	rhcStr[3].pinNumber = 14;	
+	// rhcStr[0].pinNumber = 15;
+	// rhcStr[1].pinNumber = 16;	
+	// rhcStr[2].pinNumber = 10;	
+	// rhcStr[3].pinNumber = 14;	
 
 	for (int ii = 0; ii < NUM_GTR_STRINGS; ii++)
 	{
-		pinMode(rhcStr[ii].pinNumber, INPUT);
-		digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
+		//pinMode(rhcStr[ii].pinNumber, INPUT);
+		//digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
 		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
 		lhEncode[ii].currFret = 0;
@@ -132,7 +132,7 @@ bool RhcCurrentlyPressed(int ss)
 	if (lhEncode[ss].encMode == ENC_MODE_STRINGWISE_INT)
 	{
 		// ternary operator
-		return(digitalRead(rhcStr[ss].pinNumber) ? true : false);
+		//return(digitalRead(rhcStr[ss].pinNumber) ? true : false);
 	}
 	else	// must be ENC_MODE_STRINGWISE_EXT
 	{
@@ -178,7 +178,61 @@ void EncodeAutochord(int ss)
 	}
 }
 // ******************************************** Support Methods *********************************************
+// ***************************** scanBasic() *************************************
+// Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
+// For each string, scan and determine what is pressed. If something has changed, set a flag.
+// Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
+void scanBasic()
+{
+	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		for (int ff = MAX_FRETS-1; ff >= -1; ff--)
+		{
+			if (ff == -1)
+			{
+				// Nothing was pressed. String is open. But if it was pressed before, we still need to 
+				// record the change.
+				if (ff != lhEncode[ss].currFret)
+				{
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = true;
+				}
 
+				break;
+			}
+
+			//Serial.print("outputting count on string ");
+			//Serial.print(ss);
+			//Serial.print(", fret ");
+			//Serial.println(ff);
+
+			outputGmCount(gmMapByString[ss][ff]);
+			//delay(3000);
+
+			// At this point, ff has not reached -1.
+			// Check whether this fret seems to be pressed.
+			if (digitalRead(StrobeLHC) == LOW)
+			{		
+				//Serial.print("detected key pressed on string ");
+				//Serial.print(ss);
+				//Serial.print(", fret ");
+				//Serial.println(ff);
+		
+				//Serial.print("Count = ");
+				//Serial.println(gmMapByString[ss][ff]);
+				
+				if (ff != lhEncode[ss].currFret)
+				{
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = false;
+					lhEncode[ss].currFret = ff;
+				}
+				// No need to check frets below this one.
+				break;
+			}
+		}
+	}
+}
 // ***************************** PickGatedStrings() *************************************
 // Called from loop(), where we read MIDI in. 
 // Called every 16th note when we are receiving MIDI clks.
@@ -187,7 +241,7 @@ void PickGatedStrings()
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		// if gated by RH
-		if (digitalRead(rhcStr[ss].pinNumber))
+		//if (digitalRead(rhcStr[ss].pinNumber))
 		{
 			// retrieve the current LH value and send a timed msg.
 			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;

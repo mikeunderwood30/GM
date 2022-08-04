@@ -1,12 +1,18 @@
 #ifndef Trigger_h
 #define Trigger_h
 
+#define NUM_TRIGGERS    12
+
 // Trigger sources.
 enum eTrigSrc {
-    TRIG_SRC_TB_0,
-    TRIG_SRC_TB_1,
-    TRIG_SRC_TB_2,
-    TRIG_SRC_TB_3,
+    TRIG_SRC_TB0_PRESS,
+    TRIG_SRC_TB1_PRESS,
+    TRIG_SRC_TB2_PRESS,
+    TRIG_SRC_TB3_PRESS,
+    TRIG_SRC_TB0_RELEASE,
+    TRIG_SRC_TB1_RELEASE,
+    TRIG_SRC_TB2_RELEASE,
+    TRIG_SRC_TB3_RELEASE,
     TRIG_SRC_NTON_0,
     TRIG_SRC_NTON_1,
     TRIG_SRC_NTON_2,
@@ -15,7 +21,7 @@ enum eTrigSrc {
     TRIG_SRC_NTOF_1,
     TRIG_SRC_NTOF_2,
     TRIG_SRC_NTOF_3,
-	NUM_TRIGGERS
+	NUM_TRIG_SOURCES
 };
 
 // Trigger actions.

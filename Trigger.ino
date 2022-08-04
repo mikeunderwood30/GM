@@ -36,7 +36,13 @@ TBD: Need to rework the RHC encoders so they are event-driven. They do not have 
 
 */
 
-// ************************** Tbd() ****************************
-void Tbd()
+triggerItem trigger[NUM_TRIGGERS];
+
+// ************************** CheckTriggers() ****************************
+// go through all Triggers. Wherever src is found as a source, execute the corresponding action.
+void CheckTriggers(eTrigSrc src)
 {
+    for (int tt = 0; tt < NUM_TRIGGERS; tt++)
+	{
+    }
 }

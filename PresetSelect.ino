@@ -23,7 +23,7 @@ void EncoderPresetSelect(int str)
 		}
 	}
 }
-// ***************************** ExecutePreset() *************************************
+// ****************************** ExecutePreset() *************************************
 void ExecutePreset(int preset)
 {
 	Serial.print("preset ");

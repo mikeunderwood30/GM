@@ -3,6 +3,8 @@
 #include "MIDIUSB.h"
 #include "Common.h"
 #include "AnalogControl.h"
+#include "Trigger.h"
+#include "Gm.h"
 
 // Uses Sparkfun Pro Micro Qwiic
 
@@ -68,6 +70,8 @@ byte dataByte2;
 
 byte gChannel;  //  Channel numbers are 0 based
 
+TouchButtonItem touchButton[NUM_TOUCH_BUTTONS];
+
 void noteOn(byte channel, byte pitch, byte velocity) {
 	//Serial.print("Sending note on, pitch = ");	
 	//Serial.println(pitch);
@@ -124,6 +128,11 @@ void setup()
 	digitalWrite(StrobeLHC, HIGH);       // turn on pullup resistor
 
 	InitTimers();
+
+	touchButton[0].pinNumber = 15;
+	touchButton[1].pinNumber = 16;	
+	touchButton[2].pinNumber = 10;	
+	touchButton[3].pinNumber = 14;
 
 	InitEncoders();
 	InitPresetSelect();
@@ -189,6 +198,28 @@ void loop()
 	// For each string, scan. If anything changed, update .currFret and set a flag.
 	scanBasic();
 
+	eTrigSrc src;
+	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
+	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
+	{
+		if (digitalRead(touchButton[tb].pinNumber))	// if touched
+		{
+			if (!touchButton[tb].isPressed)	// but wasn't before
+			{
+				src = TRIG_SRC_TB0_PRESS + tb;
+				CheckTriggers(src);
+			}
+		}
+		else	// not touched currently
+		{
+			if (touchButton[tb].isPressed)	// but was before
+			{
+				src = TRIG_SRC_TB0_RELEASE + tb;
+				CheckTriggers(src);
+			}
+		}
+	}
+
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		switch (lhEncode[ss].encMode)
@@ -236,61 +267,6 @@ void loop()
 	// ---------------- maybe use later --------------------
 	//checkSerialAvailable();
 	//checkFootSwitchToggle();
-}
-// ***************************** scanBasic() *************************************
-// Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
-// For each string, scan and determine what is pressed. If something has changed, set a flag.
-// Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
-void scanBasic()
-{
-	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
-	{
-		for (int ff = MAX_FRETS-1; ff >= -1; ff--)
-		{
-			if (ff == -1)
-			{
-				// Nothing was pressed. String is open. But if it was pressed before, we still need to 
-				// record the change.
-				if (ff != lhEncode[ss].currFret)
-				{
-					lhEncode[ss].changed = true;
-					lhEncode[ss].isOpen = true;
-				}
-
-				break;
-			}
-
-			//Serial.print("outputting count on string ");
-			//Serial.print(ss);
-			//Serial.print(", fret ");
-			//Serial.println(ff);
-
-			outputGmCount(gmMapByString[ss][ff]);
-			//delay(3000);
-
-			// At this point, ff has not reached -1.
-			// Check whether this fret seems to be pressed.
-			if (digitalRead(StrobeLHC) == LOW)
-			{		
-				//Serial.print("detected key pressed on string ");
-				//Serial.print(ss);
-				//Serial.print(", fret ");
-				//Serial.println(ff);
-		
-				//Serial.print("Count = ");
-				//Serial.println(gmMapByString[ss][ff]);
-				
-				if (ff != lhEncode[ss].currFret)
-				{
-					lhEncode[ss].changed = true;
-					lhEncode[ss].isOpen = false;
-					lhEncode[ss].currFret = ff;
-				}
-				// No need to check frets below this one.
-				break;
-			}
-		}
-	}
 }
 // ***************************** UserHitAKey() *************************************
 bool UserHitAKey()
