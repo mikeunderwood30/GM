@@ -237,6 +237,61 @@ void loop()
 	//checkSerialAvailable();
 	//checkFootSwitchToggle();
 }
+// ***************************** scanBasic() *************************************
+// Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
+// For each string, scan and determine what is pressed. If something has changed, set a flag.
+// Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
+void scanBasic()
+{
+	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		for (int ff = MAX_FRETS-1; ff >= -1; ff--)
+		{
+			if (ff == -1)
+			{
+				// Nothing was pressed. String is open. But if it was pressed before, we still need to 
+				// record the change.
+				if (ff != lhEncode[ss].currFret)
+				{
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = true;
+				}
+
+				break;
+			}
+
+			//Serial.print("outputting count on string ");
+			//Serial.print(ss);
+			//Serial.print(", fret ");
+			//Serial.println(ff);
+
+			outputGmCount(gmMapByString[ss][ff]);
+			//delay(3000);
+
+			// At this point, ff has not reached -1.
+			// Check whether this fret seems to be pressed.
+			if (digitalRead(StrobeLHC) == LOW)
+			{		
+				//Serial.print("detected key pressed on string ");
+				//Serial.print(ss);
+				//Serial.print(", fret ");
+				//Serial.println(ff);
+		
+				//Serial.print("Count = ");
+				//Serial.println(gmMapByString[ss][ff]);
+				
+				if (ff != lhEncode[ss].currFret)
+				{
+					lhEncode[ss].changed = true;
+					lhEncode[ss].isOpen = false;
+					lhEncode[ss].currFret = ff;
+				}
+				// No need to check frets below this one.
+				break;
+			}
+		}
+	}
+}
 // ***************************** UserHitAKey() *************************************
 bool UserHitAKey()
 {

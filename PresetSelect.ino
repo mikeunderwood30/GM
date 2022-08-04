@@ -35,15 +35,15 @@ void ExecutePreset(int preset)
 			SetEncoderMode(ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN);
 			break;
 
-		case 0:
+		case 1:
 			SetEncoderMode(ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC);
 			break;
 
-		case 1:	// octave up
+		case 2:	// octave up
 			SetTuning(65, 60, 55, 50);
 			break;
 
-		case 2:	// octave down
+		case 3:	// octave down
 			SetTuning(53, 48, 43, 38);
 			break;
 

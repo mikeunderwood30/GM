@@ -7,14 +7,22 @@ enum eTrigSrc {
     TRIG_SRC_TB_1,
     TRIG_SRC_TB_2,
     TRIG_SRC_TB_3,
+    TRIG_SRC_NTON_0,
+    TRIG_SRC_NTON_1,
+    TRIG_SRC_NTON_2,
+    TRIG_SRC_NTON_3,
+    TRIG_SRC_NTOF_0,
+    TRIG_SRC_NTOF_1,
+    TRIG_SRC_NTOF_2,
+    TRIG_SRC_NTOF_3,
 	NUM_TRIGGERS
 };
 
 // Trigger actions.
 enum eTrigAction {
-    TrigActn_StartPhrase,
-    TrigActn_SendEvent,
-    TrigActn_RHC
+    TrigActn_StartPhrase,   // parm1 specifies which phrase
+    TrigActn_SendEvent,     // parm1 specifies which event
+    TrigActn_RHC            // parm1 specifies which string
 };
 
 typedef struct
