@@ -46,11 +46,6 @@ byte monoCurrPitch;
 // ************************** InitEncoders() ****************************
 void InitEncoders()
 {
-	// rhcStr[0].pinNumber = 15;
-	// rhcStr[1].pinNumber = 16;	
-	// rhcStr[2].pinNumber = 10;	
-	// rhcStr[3].pinNumber = 14;	
-
 	for (int ii = 0; ii < NUM_GTR_STRINGS; ii++)
 	{
 		//pinMode(rhcStr[ii].pinNumber, INPUT);
@@ -64,84 +59,64 @@ void InitEncoders()
 		//lhEncode[ii].currFret = -1;
 		//lhEncode[ii].changed = false;
 
-		rhcStr[ii].isPressed = false;
+		rhcStr[ii].rhcActive = false;
 	}
 }
-// ***************************** EncodeStringwise() *************************************
+// ***************************** EncodeStringwiseLhc() *************************************
+// This part of the encoder handles whether the LH has changed while the RHC was pressed.
 // Supports the following encoder modes: ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_EXT.
 // These require both left and right hand actions.
-void EncodeStringwise(int ss)
+void EncodeStringwiseLhc(int ss)
 {
-	if (!rhcStr[ss].isPressed)		// if RHC wasn't pressed,
+	if (rhcStr[ss].rhcActive)
 	{
-		if (RhcCurrentlyPressed(ss))		// and now it is,
+		// if LH has changed
+		if (lhEncode[ss].changed)
 		{	
-			rhcStr[ss].isPressed = true;	// so it only does this once
+			lhEncode[ss].changed = false;	// so does this once only
 
-			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			
-			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
-			MidiUSB.flush();
-		}
-	}
-	else	// if it was pressed,
-	{
-		// Serial.println("was pressed");
-		if (!RhcCurrentlyPressed(ss))		// no longer is
-		{	
-			// Serial.println("no longer");	
-			rhcStr[ss].isPressed = false;
-
-			if (lhEncode[ss].msgPitch != 0)
+			if (!lhEncode[ss].isOpen)		// don't change if 'open'
 			{
+				// send a noteOff for the fret that is sounding
 				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
 				MidiUSB.flush();
-			}
-			else{
-				Serial.println("msgPitch was 0 so note off not sent");	
+
+				// calc the the new fret value and store it so a noteOff can be sent
+				lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+				// send a noteOn for the new fret
+				noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+				MidiUSB.flush();
 			}
 		}
-		else	// still is
+	}
+}
+// ***************************** EncodeStringwiseRhc() *************************************
+// Called because a Trigger has fired.
+void EncodeStringwiseRhc(bool pressOrRelease, int ss)
+{
+	// .rhcActive tracks whether the RHC on a given string is currently pressed or released.
+	// This info is needed by some encoders. For example, on some encoders, if user changes
+	// which fret is pressed while the RHC is pressed, we send a noteOff for
+	//  the old note and a noteOn for the new note. We don't do this if the RHC is not pressed. 
+	rhcStr[ss].rhcActive = pressOrRelease;
+
+	if (pressOrRelease)
+	{
+		lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+		
+		noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+		MidiUSB.flush();
+	}
+	else
+	{
+		if (lhEncode[ss].msgPitch != 0)
 		{
-			// Serial.println("still is");	
-			// if LH has changed
-			if (lhEncode[ss].changed)
-			{	
-				lhEncode[ss].changed = false;	// so does this once only
-
-				if (!lhEncode[ss].isOpen)		// don't change if 'open'
-				{
-					// send a noteOff for the fret that is sounding
-					noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
-					MidiUSB.flush();
-
-					// calc the the new fret value and store it so a noteOff can be sent
-					lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-					// send a noteOn for the new fret
-					noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
-					MidiUSB.flush();
-				}
-			}
+			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+			MidiUSB.flush();
 		}
-	}
-}
-// ***************************** ServiceEncoderRhc() *************************************
-// called because a Trigger has fired.
-void ServiceEncoderRhc(bool pressrelease, int ss)
-{
-}
-// ***************************** RhcCurrentlyPressed() *************************************
-// called from EncodeStringwise
-bool RhcCurrentlyPressed(int ss)
-{
-	if (lhEncode[ss].encMode == ENC_MODE_STRINGWISE_INT)
-	{
-		// ternary operator
-		//return(digitalRead(rhcStr[ss].pinNumber) ? true : false);
-	}
-	else	// must be ENC_MODE_STRINGWISE_EXT
-	{
-		return(rhcStr[ss].inNoteOn ? true : false);
+		else{
+			Serial.println("msgPitch was 0 so note off was not sent");	
+		}
 	}
 }
 // ***************************** EncodeStringwiseOrgan() *************************************
@@ -257,26 +232,26 @@ void PickGatedStrings()
 	}
 }
 // ***************************** SetInNoteOnFlag() *************************************
-// Called from loop(), where we read MIDI in. When we get a noteOn having a certain pitch, we set the .inNoteOn flag
+// Called from loop(), where we read MIDI in. When we get a noteOn having a certain pitch, we set the .rhcActive flag
 // for the associated string, so the ENC_MODE_STRINGWISE_EXT encoder can use it (if the string happens to be in that enc mode).
 void SetInNoteOnFlag(byte pitchByte, bool isPressed)
 {
 	switch (pitchByte)
 	{
 		case 0x40:
-			rhcStr[0].inNoteOn = isPressed;
+			rhcStr[0].rhcActive = isPressed;
 			break;
 
 		case 0x41:
-			rhcStr[1].inNoteOn = isPressed;
+			rhcStr[1].rhcActive = isPressed;
 			break;
 
 		case 0x42:
-			rhcStr[2].inNoteOn = isPressed;
+			rhcStr[2].rhcActive = isPressed;
 			break;
 
 		case 0x43:
-			rhcStr[3].inNoteOn = isPressed;
+			rhcStr[3].rhcActive = isPressed;
 			break;
 	}
 }

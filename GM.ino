@@ -21,7 +21,7 @@ void ServiceTimers();
 void EncodeGatedAutoRHC(int);
 void PickGatedStrings();
 void SetInNoteOnFlag(byte, bool);
-void EncodeStringwise(int);
+void EncodeStringwiseLhc(int);
 void EncodeStringwiseOrgan(int);
 void scanBasic();
 void EncodeAutochord(int);
@@ -129,10 +129,17 @@ void setup()
 
 	InitTimers();
 
+	// Init touch buttons
 	touchButton[0].pinNumber = 15;
 	touchButton[1].pinNumber = 16;	
 	touchButton[2].pinNumber = 10;	
 	touchButton[3].pinNumber = 14;
+
+	for (int ii = 0; ii < NUM_TOUCH_BUTTONS; ii++)
+	{
+		pinMode(touchButton[ii].pinNumber, INPUT);
+		digitalWrite(touchButton[ii].pinNumber, HIGH);       // turn on pullup resistor
+	}
 
 	InitEncoders();
 	InitPresetSelect();
@@ -208,8 +215,7 @@ void loop()
 
 			case ENC_MODE_STRINGWISE_INT:
 			case ENC_MODE_STRINGWISE_EXT:
-				//EncodePreprocess(ss);
-				EncodeStringwise(ss);
+				EncodeStringwiseLhc(ss);
 				break;
 
 			case ENC_MODE_GATED_AUTO_RHC:
@@ -228,8 +234,6 @@ void loop()
 		}
 	}
 
-	eTrigEvtType evtType;
-
 	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
 	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
 	{
@@ -237,16 +241,14 @@ void loop()
 		{
 			if (!touchButton[tb].isPressed)	// but wasn't before
 			{
-				evtType = TE_TYPE_BUTTON_PRESS;
-				CheckTriggers(evtType, tb);
+				CheckTriggers(TE_TYPE_BUTTON_PRESS, tb);
 			}
 		}
 		else	// not touched currently
 		{
 			if (touchButton[tb].isPressed)	// but was before
 			{
-				evtType = TE_TYPE_BUTTON_RELEASE;
-				CheckTriggers(evtType, tb);
+				CheckTriggers(TE_TYPE_BUTTON_RELEASE, tb);
 			}
 		}
 	}

@@ -34,7 +34,7 @@ If eTrigAction for a Trigger is set to 'TrigActn_RHC'
 triggerItem trigger[NUM_TRIGGERS];
 
 // ************************** CheckTriggers() ****************************
-// go through all Triggers. Wherever src is found as a source, execute the corresponding action.
+// go through all Triggers. Wherever the event matches, execute the corresponding action.
 void CheckTriggers(eTrigEvtType evtType, int evtParm)
 {
     for (int tt = 0; tt < NUM_TRIGGERS; tt++)
@@ -50,11 +50,13 @@ void CheckTriggers(eTrigEvtType evtType, int evtParm)
                     break;
 
                 case TrigActn_RHC_PRESS:
-                    ServiceEncoderRhc(true, trigger[tt].actionParm); // actionParm indicates which string was plucked
+                    // Here we could check the encoder mode to make sure we're in a mode which uses RHC,
+                    // but we'll assume that we are. Be sure to clean up unused Triggers, or may get unexpected behavior.
+                    EncodeStringwiseRhc(true, trigger[tt].actionParm); // actionParm indicates which string was plucked
                     break;
 
                 case TrigActn_RHC_RELEASE:
-                    ServiceEncoderRhc(false, trigger[tt].actionParm);
+                    EncodeStringwiseRhc(false, trigger[tt].actionParm);
                     break;
             }
         }

@@ -41,10 +41,12 @@ enum eEncMode {
 typedef struct
 {
 	//int pinNumber;
-	bool isPressed;
+	//bool isPressed;
 
-	// used only by ExtRHC encoder
-	bool inNoteOn;	// tracks whether noteOn or noteOff RHC trigger msg was the last received.
+	// When MIDI note msgs serve as RHC, this tracks whether noteOn or noteOff RHC trigger msg was the last received.
+	// When a button serves as RHC, this tracks whether the button is currently pressed or not.
+	bool rhcActive;
+
 	byte rhcNotePitch;	// the note value that gets recognized as a RHC event.
 	byte rhcNoteVelocity;	// stores the incoming RHC note's velocity so the encoder can use it when it sends its msg.
 } rhcStrItem;
