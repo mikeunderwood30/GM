@@ -125,6 +125,11 @@ void EncodeStringwise(int ss)
 		}
 	}
 }
+// ***************************** ServiceEncoderRhc() *************************************
+// called because a Trigger has fired.
+void ServiceEncoderRhc(bool pressrelease, int ss)
+{
+}
 // ***************************** RhcCurrentlyPressed() *************************************
 // called from EncodeStringwise
 bool RhcCurrentlyPressed(int ss)

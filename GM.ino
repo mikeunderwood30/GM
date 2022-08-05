@@ -198,28 +198,6 @@ void loop()
 	// For each string, scan. If anything changed, update .currFret and set a flag.
 	scanBasic();
 
-	eTrigSrc src;
-	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
-	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
-	{
-		if (digitalRead(touchButton[tb].pinNumber))	// if touched
-		{
-			if (!touchButton[tb].isPressed)	// but wasn't before
-			{
-				src = TRIG_SRC_TB0_PRESS + tb;
-				CheckTriggers(src);
-			}
-		}
-		else	// not touched currently
-		{
-			if (touchButton[tb].isPressed)	// but was before
-			{
-				src = TRIG_SRC_TB0_RELEASE + tb;
-				CheckTriggers(src);
-			}
-		}
-	}
-
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		switch (lhEncode[ss].encMode)
@@ -247,6 +225,29 @@ void loop()
 			case ENC_MODE_AUTOCHORD:
 				EncodeAutochord(ss);
 				break;	
+		}
+	}
+
+	eTrigEvtType evtType;
+
+	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
+	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
+	{
+		if (digitalRead(touchButton[tb].pinNumber))	// if touched
+		{
+			if (!touchButton[tb].isPressed)	// but wasn't before
+			{
+				evtType = TE_TYPE_BUTTON_PRESS;
+				CheckTriggers(evtType, tb);
+			}
+		}
+		else	// not touched currently
+		{
+			if (touchButton[tb].isPressed)	// but was before
+			{
+				evtType = TE_TYPE_BUTTON_RELEASE;
+				CheckTriggers(evtType, tb);
+			}
 		}
 	}
 
