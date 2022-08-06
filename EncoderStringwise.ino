@@ -231,30 +231,6 @@ void PickGatedStrings()
 		}
 	}
 }
-// ***************************** SetInNoteOnFlag() *************************************
-// Called from loop(), where we read MIDI in. When we get a noteOn having a certain pitch, we set the .rhcActive flag
-// for the associated string, so the ENC_MODE_STRINGWISE_EXT encoder can use it (if the string happens to be in that enc mode).
-void SetInNoteOnFlag(byte pitchByte, bool isPressed)
-{
-	switch (pitchByte)
-	{
-		case 0x40:
-			rhcStr[0].rhcActive = isPressed;
-			break;
-
-		case 0x41:
-			rhcStr[1].rhcActive = isPressed;
-			break;
-
-		case 0x42:
-			rhcStr[2].rhcActive = isPressed;
-			break;
-
-		case 0x43:
-			rhcStr[3].rhcActive = isPressed;
-			break;
-	}
-}
 // ***************************** EncodeGatedAutoRHC() *************************************
 // void EncodeGatedAutoRHC(int ss)
 // {

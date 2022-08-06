@@ -178,11 +178,13 @@ void loop()
 			switch (rx.byte1)
 			{
 				case 0x90:
-					SetInNoteOnFlag(rx.byte2, true);
+					// Note: this means that every time we receive a NoteOn msg, we check all the triggers.
+					// Maybe we should do some prefiltering. For ex, maybe only check Triggers if pitch value is in a certain range.
+					CheckTriggers(TE_TYPE_MIDI_NTON, rx.byte2);
 					break;
 
 				case 0x80:
-					SetInNoteOnFlag(rx.byte2, false);
+					CheckTriggers(TE_TYPE_MIDI_NTOF, rx.byte2);
 					break;
 
 				case 0xF8:	// MIDI clock
