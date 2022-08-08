@@ -33,6 +33,21 @@ If eTrigAction for a Trigger is set to 'TrigActn_RHC'
 
 triggerItem trigger[NUM_TRIGGERS];
 
+// ************************** InitTriggers() ****************************
+void InitTriggers()
+{
+  // later, move this to where execute a preset
+  trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
+  trigger[0].evtParm = 0; // which button
+  trigger[0].action = TrigActn_RHC_PRESS;
+  trigger[0].evtType = 0; // which string
+
+  trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
+  trigger[1].evtParm = 0; // which button
+  trigger[1].action = TrigActn_RHC_RELEASE;
+  trigger[1].evtType = 0; // which string
+}
+
 // ************************** CheckTriggers() ****************************
 // go through all Triggers. Wherever the event matches, execute the corresponding action.
 void CheckTriggers(eTrigEvtType evtType, int evtParm)

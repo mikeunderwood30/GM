@@ -52,12 +52,9 @@ void InitEncoders()
 		//digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
 		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
-		lhEncode[ii].currFret = 0;
+		lhEncode[ii].currFret = -1;
 		lhEncode[ii].isOpen = false;
 		lhEncode[ii].changed = false;
-
-		//lhEncode[ii].currFret = -1;
-		//lhEncode[ii].changed = false;
 
 		rhcStr[ii].rhcActive = false;
 	}
@@ -81,11 +78,17 @@ void EncodeStringwiseLhc(int ss)
 				noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
 				MidiUSB.flush();
 
+      Serial.print("Sliding. Sent noteOff. msgPitch = ");
+      Serial.println(lhEncode[ss].msgPitch);
+
 				// calc the the new fret value and store it so a noteOff can be sent
 				lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 				// send a noteOn for the new fret
 				noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
 				MidiUSB.flush();
+
+            Serial.print("End of slide. New note noteOn. msgPitch = ");
+            Serial.println(lhEncode[ss].msgPitch);
 			}
 		}
 	}
@@ -100,23 +103,34 @@ void EncodeStringwiseRhc(bool pressOrRelease, int ss)
 	//  the old note and a noteOn for the new note. We don't do this if the RHC is not pressed. 
 	rhcStr[ss].rhcActive = pressOrRelease;
 
+  if (lhEncode[ss].msgPitch != -1)
+    {
+      return;
+    }
+
 	if (pressOrRelease)
 	{
 		lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 		
 		noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
 		MidiUSB.flush();
+
+   // Serial.print("Sent noteOn. msgPitch = ");
+  //  Serial.println(lhEncode[ss].msgPitch);  
 	}
 	else
 	{
-		if (lhEncode[ss].msgPitch != 0)
-		{
+		//if (lhEncode[ss].msgPitch != -1)
+		//{
 			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
 			MidiUSB.flush();
-		}
-		else{
-			Serial.println("msgPitch was 0 so note off was not sent");	
-		}
+
+    //  Serial.print("Sent noteOff. msgPitch = ");
+    //  Serial.println(lhEncode[ss].msgPitch); 
+		//}
+		//else{
+		//	Serial.println("msgPitch was -1 so note off was not sent");	
+		//}
 	}
 }
 // ***************************** EncodeStringwiseOrgan() *************************************
