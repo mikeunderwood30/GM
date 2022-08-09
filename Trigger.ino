@@ -33,31 +33,68 @@ If eTrigAction for a Trigger is set to 'TrigActn_RHC'
 
 triggerItem trigger[NUM_TRIGGERS];
 
+// ************************** InitTriggers() ****************************
+void InitTriggers()
+{
+    // set all to false
+    for (int tt = 0; tt < NUM_TRIGGERS; tt++)
+    {
+        if (trigger[tt].isActive)
+        {
+            trigger[tt].isActive = false;
+        }
+    }
+
+  // later, move this to where execute a preset
+  trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
+  trigger[0].evtParm = 0; // which button
+  trigger[0].action = TrigActn_RHC_PRESS;
+  trigger[0].actionParm = 0; // which string
+  trigger[0].isActive = true;
+
+  trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
+  trigger[1].evtParm = 0; // which button
+  trigger[1].action = TrigActn_RHC_RELEASE;
+  trigger[1].actionParm = 0; // which string
+  trigger[1].isActive = true;
+}
+
 // ************************** CheckTriggers() ****************************
 // go through all Triggers. Wherever the event matches, execute the corresponding action.
 void CheckTriggers(eTrigEvtType evtType, int evtParm)
 {
     for (int tt = 0; tt < NUM_TRIGGERS; tt++)
 	{
-        if (trigger[tt].evtType == evtType && trigger[tt].evtParm == evtParm)
+        if (trigger[tt].isActive)
         {
-            switch (trigger[tt].action)
+            // Serial.println("Active Trigger (action, actionParm): ");
+            // Serial.print(trigger[tt].action);
+            // Serial.print(",");
+            // Serial.print(trigger[tt].actionParm);
+            // Serial.println();
+
+            if (trigger[tt].evtType == evtType && trigger[tt].evtParm == evtParm)
             {
-                case TrigActn_StartPhrase:
+                switch (trigger[tt].action)
+                {
+                    case TrigActn_StartPhrase:
                     break;
 
-                case TrigActn_SendEvent:
+                    case TrigActn_SendEvent:
                     break;
 
-                case TrigActn_RHC_PRESS:
-                    // Here we could check the encoder mode to make sure we're in a mode which uses RHC,
-                    // but we'll assume that we are. Be sure to clean up unused Triggers, or may get unexpected behavior.
-                    EncodeStringwiseRhc(true, trigger[tt].actionParm); // actionParm indicates which string was plucked
-                    break;
+                    case TrigActn_RHC_PRESS:
+                        //Serial.println("Trigger = RHC_PRESS");
+                        // Here we could check the encoder mode to make sure we're in a mode which uses RHC,
+                        // but we'll assume that we are. Be sure to clean up unused Triggers, or may get unexpected behavior.
+                        EncodeStringwiseRhc(true, trigger[tt].actionParm); // actionParm indicates which string was plucked
+                        break;
 
-                case TrigActn_RHC_RELEASE:
-                    EncodeStringwiseRhc(false, trigger[tt].actionParm);
-                    break;
+                    case TrigActn_RHC_RELEASE:
+                        //Serial.println("Trigger = RHC_RELEASE");
+                        EncodeStringwiseRhc(false, trigger[tt].actionParm);
+                        break;
+                }
             }
         }
     }

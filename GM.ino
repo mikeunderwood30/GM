@@ -73,16 +73,16 @@ byte gChannel;  //  Channel numbers are 0 based
 TouchButtonItem touchButton[NUM_TOUCH_BUTTONS];
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	//Serial.print("Sending note on, pitch = ");	
-	//Serial.println(pitch);
+	Serial.print("Sending note on, pitch = ");	
+	Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	//Serial.print("Sending note off, pitch = ");	
-	//Serial.println(pitch);
+	Serial.print("Sending note off, pitch = ");	
+	Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -142,6 +142,7 @@ void setup()
 	}
 
 	InitEncoders();
+  InitTriggers();
 	InitPresetSelect();
 	InitAnalogControls();
 
@@ -207,6 +208,38 @@ void loop()
 	// For each string, scan. If anything changed, update .currFret and set a flag.
 	scanBasic();
 
+
+	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
+	// Note: for stringwise encoder, found that this should be done before the
+	// check to see if fret has changed. Otherwise, get an extra noteOff/noteOn sequence.
+	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
+	{
+		if (digitalRead(touchButton[tb].pinNumber))	// if touched
+		{
+			if (!touchButton[tb].isPressed)	// but wasn't before
+			{
+        //Serial.print("Button ");
+        //Serial.print(tb);
+        //Serial.println(" was pressed");
+        
+				CheckTriggers(TE_TYPE_BUTTON_PRESS, tb);
+        touchButton[tb].isPressed = true;
+			}
+		}
+		else	// not touched currently
+		{
+			if (touchButton[tb].isPressed)	// but was before
+			{
+        //      Serial.print("Button ");
+        //Serial.print(tb);
+        //Serial.println(" was released");
+        
+				CheckTriggers(TE_TYPE_BUTTON_RELEASE, tb);
+        touchButton[tb].isPressed = false;
+			}
+		}
+	}
+
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		switch (lhEncode[ss].encMode)
@@ -217,7 +250,11 @@ void loop()
 
 			case ENC_MODE_STRINGWISE_INT:
 			case ENC_MODE_STRINGWISE_EXT:
-				EncodeStringwiseLhc(ss);
+				if (rhcStr[ss].rhcActive)
+				{
+					// if RHC is pressed, check for fret changed
+					EncodeStringwiseLhc(ss);
+				}
 				break;
 
 			case ENC_MODE_GATED_AUTO_RHC:
@@ -233,25 +270,6 @@ void loop()
 			case ENC_MODE_AUTOCHORD:
 				EncodeAutochord(ss);
 				break;	
-		}
-	}
-
-	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
-	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
-	{
-		if (digitalRead(touchButton[tb].pinNumber))	// if touched
-		{
-			if (!touchButton[tb].isPressed)	// but wasn't before
-			{
-				CheckTriggers(TE_TYPE_BUTTON_PRESS, tb);
-			}
-		}
-		else	// not touched currently
-		{
-			if (touchButton[tb].isPressed)	// but was before
-			{
-				CheckTriggers(TE_TYPE_BUTTON_RELEASE, tb);
-			}
 		}
 	}
 
@@ -349,4 +367,38 @@ void ProcessFtswChanged(int ftswNum, bool newValue)
 			break;
 	}
  */
+}
+// ***************************************** ProcessFtswChanged() ***********************************
+void DumpGtrInfo()
+{
+	Serial.println("DumpGtrInfo()");
+
+	// show info about each active trigger
+	Serial.println("active Triggers (index): ");
+	for (int tt = 0; tt < NUM_TRIGGERS; tt++)
+	{
+		if (trigger[tt].isActive)
+		{
+			Serial.print(tt);
+			Serial.println();
+		}
+	}
+
+	// show info about each string:
+	Serial.println("Strings (ss, currFret): ");
+	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		lhEncode[ss].encMode = ENC_MODE_STRINGWISE_INT;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
+		lhEncode[ss].currFret = -1;
+		lhEncode[ss].isOpen = false;
+		lhEncode[ss].changed = false;
+
+		rhcStr[ss].rhcActive = false;
+
+		Serial.print(ss);
+		Serial.print(",");
+		Serial.print(lhEncode[ss].currFret);
+		Serial.print(",");
+		Serial.println();
+	}
 }

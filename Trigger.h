@@ -44,6 +44,8 @@ enum eTrigAction {
  
 typedef struct
 {
+    bool isActive;
+    
     // can have various Trigger sources. Current sources are MIDI Note messages and touch buttons.
 	eTrigEvtType evtType;
     int evtParm;  // for example, if evtType is 'button press', this indicates which button.
