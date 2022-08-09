@@ -36,6 +36,7 @@ triggerItem trigger[NUM_TRIGGERS];
 // ************************** InitTriggers() ****************************
 void InitTriggers()
 {
+<<<<<<< HEAD
     // set all to false
     for (int tt = 0; tt < NUM_TRIGGERS; tt++)
     {
@@ -45,12 +46,18 @@ void InitTriggers()
         }
     }
 
+=======
+>>>>>>> 67816aed6994474ef3060a3190cb20bae50af241
   // later, move this to where execute a preset
   trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
   trigger[0].evtParm = 0; // which button
   trigger[0].action = TrigActn_RHC_PRESS;
+<<<<<<< HEAD
   trigger[0].actionParm = 0; // which string
   trigger[0].isActive = true;
+=======
+  trigger[0].evtType = 0; // which string
+>>>>>>> 67816aed6994474ef3060a3190cb20bae50af241
 
   trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
   trigger[1].evtParm = 0; // which button
