@@ -73,16 +73,16 @@ byte gChannel;  //  Channel numbers are 0 based
 TouchButtonItem touchButton[NUM_TOUCH_BUTTONS];
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note on, pitch = ");	
-	Serial.println(pitch);
+	// Serial.print("Sending note on, pitch = ");	
+	// Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note off, pitch = ");	
-	Serial.println(pitch);
+	// Serial.print("Sending note off, pitch = ");	
+	// Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -127,8 +127,6 @@ void setup()
 	pinMode(StrobeLHC, INPUT);
 	digitalWrite(StrobeLHC, HIGH);       // turn on pullup resistor
 
-	InitTimers();
-
 	// Init touch buttons
 	touchButton[0].pinNumber = 15;
 	touchButton[1].pinNumber = 16;	
@@ -141,8 +139,9 @@ void setup()
 		digitalWrite(touchButton[ii].pinNumber, HIGH);       // turn on pullup resistor
 	}
 
+	InitTimers();
 	InitEncoders();
-  InitTriggers();
+  	InitTriggers();
 	InitPresetSelect();
 	InitAnalogControls();
 
@@ -218,24 +217,24 @@ void loop()
 		{
 			if (!touchButton[tb].isPressed)	// but wasn't before
 			{
-        //Serial.print("Button ");
-        //Serial.print(tb);
-        //Serial.println(" was pressed");
-        
+				//Serial.print("Button ");
+				//Serial.print(tb);
+				//Serial.println(" was pressed");
+
 				CheckTriggers(TE_TYPE_BUTTON_PRESS, tb);
-        touchButton[tb].isPressed = true;
+				touchButton[tb].isPressed = true;
 			}
 		}
 		else	// not touched currently
 		{
 			if (touchButton[tb].isPressed)	// but was before
 			{
-        //      Serial.print("Button ");
-        //Serial.print(tb);
-        //Serial.println(" was released");
-        
+				//      Serial.print("Button ");
+				//Serial.print(tb);
+				//Serial.println(" was released");
+
 				CheckTriggers(TE_TYPE_BUTTON_RELEASE, tb);
-        touchButton[tb].isPressed = false;
+				touchButton[tb].isPressed = false;
 			}
 		}
 	}

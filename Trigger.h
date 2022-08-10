@@ -13,35 +13,17 @@ enum eTrigEvtType {
     TE_TYPE_BUTTON_RELEASE,
     TE_TYPE_MIDI_NTON,
     TE_TYPE_MIDI_NTOF,
-    // TRIG_SRC_TB0_PRESS,
-    // TRIG_SRC_TB1_PRESS,
-    // TRIG_SRC_TB2_PRESS,
-    // TRIG_SRC_TB3_PRESS,
-    // TRIG_SRC_TB0_RELEASE,
-    // TRIG_SRC_TB1_RELEASE,
-    // TRIG_SRC_TB2_RELEASE,
-    // TRIG_SRC_TB3_RELEASE,
-    // TRIG_SRC_NTON_0,
-    // TRIG_SRC_NTON_1,
-    // TRIG_SRC_NTON_2,
-    // TRIG_SRC_NTON_3,
-    // TRIG_SRC_NTOF_0,
-    // TRIG_SRC_NTOF_1,
-    // TRIG_SRC_NTOF_2,
-    // TRIG_SRC_NTOF_3,
 	NUM_TRIG_TYPES
 };
 
 // Trigger actions.
 enum eTrigAction {
-    TrigActn_StartPhrase,   // parm1 specifies which phrase
-    TrigActn_SendEvent,     // parm1 specifies which event
-    TrigActn_RHC_PRESS,      // parm1 specifies which string
-    TrigActn_RHC_RELEASE    // parm1 specifies which string
+    TrigActn_StartPhrase,   // actionParm specifies which phrase
+    TrigActn_SendEvent,     // actionParm specifies which event
+    TrigActn_RHC_PRESS,      // actionParm specifies which string
+    TrigActn_RHC_RELEASE    // actionParm specifies which string
 };
 
-
- 
 typedef struct
 {
     bool isActive;

@@ -115,7 +115,7 @@ void ServiceTimers()
           lhEncode[ss].encMode = ENC_MODE_PRESET_SELECT;
         }
 
-        DumpGtrInfo();
+        //DumpGtrInfo();
       }
     }
 

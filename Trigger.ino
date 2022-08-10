@@ -44,19 +44,6 @@ void InitTriggers()
             trigger[tt].isActive = false;
         }
     }
-
-  // later, move this to where execute a preset
-  trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
-  trigger[0].evtParm = 0; // which button
-  trigger[0].action = TrigActn_RHC_PRESS;
-  trigger[0].actionParm = 0; // which string
-  trigger[0].isActive = true;
-
-  trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
-  trigger[1].evtParm = 0; // which button
-  trigger[1].action = TrigActn_RHC_RELEASE;
-  trigger[1].actionParm = 0; // which string
-  trigger[1].isActive = true;
 }
 
 // ************************** CheckTriggers() ****************************
@@ -81,6 +68,8 @@ void CheckTriggers(eTrigEvtType evtType, int evtParm)
                     break;
 
                     case TrigActn_SendEvent:
+                    Serial.println("Sending event ");
+                    Serial.print(trigger[tt].actionParm);
                     break;
 
                     case TrigActn_RHC_PRESS:
