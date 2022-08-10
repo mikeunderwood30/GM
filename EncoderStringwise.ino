@@ -184,7 +184,6 @@ void EncodeAutochord(int ss)
 		lhEncode[ss].changed = false;
 	}
 }
-// ******************************************** Support Methods *********************************************
 // ***************************** scanBasic() *************************************
 // Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
 // For each string, scan and determine what is pressed. If something has changed, set a flag.

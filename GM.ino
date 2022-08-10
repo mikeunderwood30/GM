@@ -210,7 +210,7 @@ void loop()
 
 
 	// check all touch buttons and for each, possibly fire a Trigger if something has changed.
-	// Note: for stringwise encoder, found that this should be done before the
+	// Note: for stringwise encoder, this should come before the
 	// check to see if fret has changed. Otherwise, get an extra noteOff/noteOn sequence.
 	for (int tb = 0; tb < NUM_TOUCH_BUTTONS; tb++)
 	{
@@ -239,6 +239,7 @@ void loop()
 			}
 		}
 	}
+
 
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
