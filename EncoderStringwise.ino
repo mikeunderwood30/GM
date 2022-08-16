@@ -48,10 +48,11 @@ void InitEncoders()
 
 		lhEncode[ii].isOpen = true;
 		lhEncode[ii].changed = false;
+		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;
 		rhcStr[ii].rhcActive = false;
 	}
 
-	ExecutePreset(0);
+     DumpGtrInfo();
 }
 // ***************************** EncodeStringwiseLhc() *************************************
 // This part of the encoder handles whether the LH has changed. It is only called while
@@ -249,6 +250,25 @@ void PickGatedStrings()
 			AddNoteToTimerPool(200, pitch);
 			noteOn(0, pitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
+		}
+	}
+}
+// ***************************** EncodeOverrideOnOff() *************************************
+void EncodeOverrideOnOff(bool on)
+{
+	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+	{
+		if (on)
+		{
+			// backup the current encoder mode so it can be restored when override is over.
+			lhEncode[ss].encModeBackup = lhEncode[ss].encMode;
+
+			// override the encoder mode. This will allow user to select a Preset using the fretboard.
+			lhEncode[ss].encMode = ENC_MODE_PRESET_SELECT;
+		}
+		else	// off
+		{
+			lhEncode[ss].encMode = lhEncode[ss].encModeBackup;
 		}
 	}
 }
