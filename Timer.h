@@ -3,6 +3,8 @@
 
 #define NOTE_BUFFER_SIZE	8
 
+extern void AddNoteToTimerPool(unsigned int, byte);
+
 //used for timing note duration
 typedef struct
 {

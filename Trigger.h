@@ -24,6 +24,8 @@ enum eTrigAction {
     TrigActn_RHC_RELEASE    // actionParm specifies which string
 };
 
+
+ 
 typedef struct
 {
     bool isActive;

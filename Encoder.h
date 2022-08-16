@@ -67,4 +67,15 @@ extern rhcStrItem rhcStr[];
 //extern lhcBasicItem lhEncodeBasic[];
 extern lhEncodeItem lhEncode[];
 
+// define pins that select the count. Pin numbers here are for the Sparkfun Pro Micro Qwiic.
+const int D0_pin = 2;		// p5. Mega p27
+const int D1_pin = 3;		// p6. Mega p26
+const int D2_pin = 4;		// p7. Mega p25
+const int D3_pin = 5;		// p8. Mega p24
+const int D4_pin = 6;		// p9. Mega p23
+const int D5_pin = 7;		// p10. Mega p22
+
+const int StrobeLHC = 8;	// p11. Mega p28.
+const int EncodeOverrideButton = 9;	// p12
+
 #endif

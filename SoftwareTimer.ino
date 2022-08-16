@@ -118,7 +118,7 @@ void ServiceTimers()
     }
 
     // should be on its own timer eventually
-    CheckAtoDControls();
+    //CheckAtoDControls();
 
     encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
   }

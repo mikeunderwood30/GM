@@ -4,7 +4,7 @@
 #include "Trigger.h"
 
 // ************************** InitPresetSelect() ****************************
-void InitPresetSelect()
+void InitPresetSelect(void)
 { 
 	
 }
@@ -23,8 +23,7 @@ void EncoderPresetSelect(int str)
 				ExecutePreset(presetNum);
 				delay(500);
 
-				lhEncode[ss].changed = false;
-			}
+			lhEncode[ss].changed = false;
 		}
 	}
 }
@@ -37,41 +36,11 @@ void ExecutePreset(int preset)
 	switch (preset)
 	{
 		case 0:
-			SetEncoderMode(ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT, ENC_MODE_STRINGWISE_INT);
-			SetTuning(53, 48, 43, 38);
-
-			trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
-			trigger[0].evtParm = 0; // which button
-			trigger[0].action = TrigActn_RHC_PRESS;
-			trigger[0].actionParm = 0; // which string
-			trigger[0].isActive = true;
-
-			trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
-			trigger[1].evtParm = 0; // which button
-			trigger[1].action = TrigActn_RHC_RELEASE;
-			trigger[1].actionParm = 0; // which string
-			trigger[1].isActive = true;
+			SetEncoderMode(ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN);
 			break;
 
 		case 1:
-			SetEncoderMode(ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN);
-
-			trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
-			trigger[0].evtParm = 0; // which button
-			trigger[0].action = TrigActn_SendEvent;
-			trigger[0].actionParm = 0; // which event
-			trigger[0].isActive = true;
-
-			trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
-			trigger[1].evtParm = 0; // which button
-			trigger[1].action = TrigActn_SendEvent;
-			trigger[1].actionParm = 1; // which event
-			trigger[1].isActive = true;
-			break;
-
-		// top of string 0
-		case 14:	// octave down
-			SetTuning(53, 48, 43, 38);
+			SetEncoderMode(ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC);
 			break;
 
 		case 15:	// octave up

@@ -1,6 +1,6 @@
 {
-    "configuration": "cpu=atmega2560",
-    "board": "arduino:avr:mega",
+    "configuration": "cpu=8MHzatmega32U4",
+    "board": "SparkFun:avr:promicro",
     "programmer": "arduino:avrisp",
     "port": "COM7",
     "sketch": "GM_2022.ino"
