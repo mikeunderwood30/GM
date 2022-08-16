@@ -4,7 +4,7 @@
 #include "Trigger.h"
 
 // ************************** InitPresetSelect() ****************************
-void InitPresetSelect()
+void InitPresetSelect(void)
 { 
 	
 }
@@ -21,7 +21,6 @@ void EncoderPresetSelect(int str)
 			ExecutePreset(presetNum);
 
 				lhEncode[ss].changed = false;
-			}
 		}
 	}
 }
