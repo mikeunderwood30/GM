@@ -114,6 +114,8 @@ void ServiceTimers()
           // override the encoder mode. This will allow user to select a Preset using the fretboard.
           lhEncode[ss].encMode = ENC_MODE_PRESET_SELECT;
         }
+
+        DumpGtrInfo();
       }
     }
 

@@ -60,8 +60,6 @@ void InitEncoders()
 		lhEncode[ii].changed = false;
 		rhcStr[ii].rhcActive = false;
 	}
-
-	ExecutePreset(1);
 }
 // ***************************** EncodeStringwiseLhc() *************************************
 // This part of the encoder handles whether the LH has changed. It is only called while
