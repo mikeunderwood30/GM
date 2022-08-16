@@ -25,24 +25,9 @@ enum eEncMode {
 // 	bool isActive;
 // 	unsigned int count;	
 
-// 	byte msgPitch;	// stored here for use in noteOff msg when it occurs.
-
-// } rhcNoteDurationItem;
-
-// typedef struct
-// {
-// 	int currFret;	// has a value of -1 when string is open
-// 	bool changed;	// set if currFret has changed.
-// 	int encMode;	// the current encoder mode, unless 'override' is in effect.
-// 	int encModeBackup;	// for saving encMode value when override is in effect.
-// } lhcBasicItem;
-
 // used for per-string capacitive touch sensor
 typedef struct
 {
-	//int pinNumber;
-	//bool isPressed;
-
 	// When MIDI note msgs serve as RHC, this tracks whether noteOn or noteOff RHC trigger msg was the last received.
 	// When a button serves as RHC, this tracks whether the button is currently pressed or not.
 	bool rhcActive;
@@ -57,7 +42,7 @@ typedef struct
 	int channel;
 	// bool sustain;
 
-	int currFret;	// can never have a value of -1. Value ignored when isOpen == true.
+	int currFret;	// Value ignored when isOpen == true.
 	bool isOpen;
 	bool changed;	// set if currFret has changed.
 	int encMode;	// the current encoder mode, unless 'override' is in effect.
