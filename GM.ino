@@ -73,16 +73,16 @@ byte gChannel;  //  Channel numbers are 0 based
 TouchButtonItem touchButton[NUM_TOUCH_BUTTONS];
 
 void noteOn(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note on, pitch = ");	
-	Serial.println(pitch);
+	 //Serial.print("Sending note on, pitch = ");	
+	 //Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
 void noteOff(byte channel, byte pitch, byte velocity) {
-	Serial.print("Sending note off, pitch = ");	
-	Serial.println(pitch);
+	 //Serial.print("Sending note off, pitch = ");	
+	 //Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -127,8 +127,6 @@ void setup()
 	pinMode(StrobeLHC, INPUT);
 	digitalWrite(StrobeLHC, HIGH);       // turn on pullup resistor
 
-	InitTimers();
-
 	// Init touch buttons
 	touchButton[0].pinNumber = 15;
 	touchButton[1].pinNumber = 16;	
@@ -141,8 +139,9 @@ void setup()
 		digitalWrite(touchButton[ii].pinNumber, HIGH);       // turn on pullup resistor
 	}
 
+	InitTimers();
 	InitEncoders();
-  InitTriggers();
+  	InitTriggers();
 	InitPresetSelect();
 	InitAnalogControls();
 
@@ -165,12 +164,15 @@ void loop()
 			//Serial.print("Header: ");
 			//Serial.print(rx.header, HEX);
 			//Serial.print("-");
-		
-			//Serial.println(rx.byte1, HEX);
-			//Serial.print("-");
-			//Serial.print(rx.byte2, HEX);
-			//Serial.print("-");
-			//Serial.println(rx.byte3, HEX);
+
+			// if (rx.byte1 == 0x90 && rx.byte2 == 0x01)
+			// {
+				// Serial.print(rx.byte1, HEX);
+				// Serial.print("-");
+				// Serial.print(rx.byte2, HEX);
+				// Serial.print("-");
+				// Serial.println(rx.byte3, HEX);
+			// }
 		
 			//AssembleSysExIn(rx.byte1);
 			//AssembleSysExIn(rx.byte2);
@@ -181,11 +183,15 @@ void loop()
 				case 0x90:
 					// Note: this means that every time we receive a NoteOn msg, we check all the triggers.
 					// Maybe we should do some prefiltering. For ex, maybe only check Triggers if pitch value is in a certain range.
-					CheckTriggers(TE_TYPE_MIDI_NTON, rx.byte2);
+					//CheckTriggers(TE_TYPE_MIDI_NTON, rx.byte2);
+					noteOn(0, rx.byte2, rx.byte3);   // Channel, pitch, velocity
+					MidiUSB.flush();
 					break;
 
 				case 0x80:
-					CheckTriggers(TE_TYPE_MIDI_NTOF, rx.byte2);
+					//CheckTriggers(TE_TYPE_MIDI_NTOF, rx.byte2);
+					noteOff(0, rx.byte2, rx.byte3);   // Channel, pitch, velocity
+					MidiUSB.flush();
 					break;
 
 				case 0xF8:	// MIDI clock
@@ -218,24 +224,24 @@ void loop()
 		{
 			if (!touchButton[tb].isPressed)	// but wasn't before
 			{
-        //Serial.print("Button ");
-        //Serial.print(tb);
-        //Serial.println(" was pressed");
-        
+				//Serial.print("Button ");
+				//Serial.print(tb);
+				//Serial.println(" was pressed");
+
 				CheckTriggers(TE_TYPE_BUTTON_PRESS, tb);
-        touchButton[tb].isPressed = true;
+				touchButton[tb].isPressed = true;
 			}
 		}
 		else	// not touched currently
 		{
 			if (touchButton[tb].isPressed)	// but was before
 			{
-        //      Serial.print("Button ");
-        //Serial.print(tb);
-        //Serial.println(" was released");
-        
+				//      Serial.print("Button ");
+				//Serial.print(tb);
+				//Serial.println(" was released");
+
 				CheckTriggers(TE_TYPE_BUTTON_RELEASE, tb);
-        touchButton[tb].isPressed = false;
+				touchButton[tb].isPressed = false;
 			}
 		}
 	}
@@ -369,37 +375,40 @@ void ProcessFtswChanged(int ftswNum, bool newValue)
 	}
  */
 }
-// ***************************************** ProcessFtswChanged() ***********************************
-void DumpGtrInfo()
+// ***************************************** DumpTriggerInfo() ***********************************
+void DumpTriggerInfo()
 {
-	Serial.println("DumpGtrInfo()");
+	Serial.println("Triggers:");
 
 	// show info about each active trigger
-	Serial.println("active Triggers (index): ");
+	Serial.println("active Triggers (index, action, actionParm): ");
 	for (int tt = 0; tt < NUM_TRIGGERS; tt++)
 	{
 		if (trigger[tt].isActive)
 		{
 			Serial.print(tt);
+			Serial.print(", ");
+			Serial.print(trigger[tt].action);
+			Serial.print(", ");
+			Serial.print(trigger[tt].actionParm);
 			Serial.println();
 		}
 	}
+}
+// ***************************************** DumpGtrInfo() ***********************************
+void DumpGtrInfo()
+{
+	Serial.println("Guitar strings:");
 
 	// show info about each string:
-	Serial.println("Strings (ss, currFret): ");
+	Serial.println("Strings (ss, encMode): ");
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
-		lhEncode[ss].encMode = ENC_MODE_STRINGWISE_INT;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
-		lhEncode[ss].currFret = -1;
-		lhEncode[ss].isOpen = false;
-		lhEncode[ss].changed = false;
-
-		rhcStr[ss].rhcActive = false;
-
 		Serial.print(ss);
-		Serial.print(",");
-		Serial.print(lhEncode[ss].currFret);
-		Serial.print(",");
+		Serial.print(", ");
+		Serial.print(lhEncode[ss].encModeBackup);	// encMode will be set to this when come out of override mode
 		Serial.println();
 	}
+
+Serial.println("Encoder modes: PRESET_SELECT, STRINGWISE_INT, STRINGWISE_EXT, GATED_AUTO_RHC, STRINGWISE_ORGAN, AUTOCHORD");
 }

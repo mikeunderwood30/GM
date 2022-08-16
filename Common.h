@@ -6,6 +6,8 @@ enum OnOff {
 	ON
 };
 
+#define byte	unsigned char
+
 #define CHANNEL_3  		2
 #define CHANNEL_4  		3
 #define CHANNEL_5		4

@@ -6,7 +6,7 @@
 #include "Encoder.h"
 
 void outputGmCount(byte);
-//void ExecutePreset(int);
+void ExecutePreset(int);
 
 int gmMapByString[4][16] = {
 61, 59, 63, 57, 62, 56, 58, 60, 21, 19, 23, 17, 22, 16, 18, 20,
@@ -52,12 +52,16 @@ void InitEncoders()
 		//digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
 		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_INT;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
-		lhEncode[ii].currFret = -1;
-		lhEncode[ii].isOpen = false;
-		lhEncode[ii].changed = false;
 
+		// Value ignored when isOpen == true.
+		//lhEncode[ii].currFret = -1;
+
+		lhEncode[ii].isOpen = true;
+		lhEncode[ii].changed = false;
 		rhcStr[ii].rhcActive = false;
 	}
+
+	ExecutePreset(1);
 }
 // ***************************** EncodeStringwiseLhc() *************************************
 // This part of the encoder handles whether the LH has changed. It is only called while
@@ -73,7 +77,7 @@ void EncodeStringwiseLhc(int ss)
 
 		if (!lhEncode[ss].isOpen)		// don't change if 'open'
 		{
-      		Serial.println("LH has changed while RHC is pressed");
+      		//Serial.println("LH has changed while RHC is pressed");
         
 			// send a noteOff for the fret that is sounding
 			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
@@ -202,7 +206,7 @@ void scanBasic()
 				{
 					lhEncode[ss].changed = true;
 					lhEncode[ss].isOpen = true;
-					// note: don't set currFret to -1.
+					lhEncode[ss].currFret = -1;
 				}
 
 				break;
