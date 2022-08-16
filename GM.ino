@@ -138,6 +138,7 @@ void setup()
 	touchButton[1].pinNumber = 16;	
 	touchButton[2].pinNumber = 10;	
 	touchButton[3].pinNumber = 14;
+	touchButton[EncodeOverrideButton].pinNumber = 9;	// p12
 
 	for (int ii = 0; ii < NUM_TOUCH_BUTTONS; ii++)
 	{

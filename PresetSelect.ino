@@ -100,8 +100,6 @@ void SetEncoderMode(int e0, int e1, int e2, int e3)
 	lhEncode[1].encModeBackup = e1;
 	lhEncode[2].encModeBackup = e2;
 	lhEncode[3].encModeBackup = e3;
-
-	DumpGtrInfo();
 }
 // ***************************** SetTuning() *************************************
 // sets tuning for all strings.

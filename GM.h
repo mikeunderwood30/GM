@@ -1,7 +1,8 @@
 #ifndef Gm_h
 #define Gm_h
 
-#define NUM_TOUCH_BUTTONS   4
+#define NUM_TOUCH_BUTTONS   5
+#define EncodeOverrideButton    4
 
 typedef struct
 {

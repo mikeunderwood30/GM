@@ -21,7 +21,9 @@ enum eTrigAction {
     TrigActn_StartPhrase,   // actionParm specifies which phrase
     TrigActn_SendEvent,     // actionParm specifies which event
     TrigActn_RHC_PRESS,      // actionParm specifies which string
-    TrigActn_RHC_RELEASE    // actionParm specifies which string
+    TrigActn_RHC_RELEASE,    // actionParm specifies which string
+    TrigActn_EncodeOverrideOn,
+    TrigActn_EncodeOverrideOff
 };
 
 extern void InitTriggers();

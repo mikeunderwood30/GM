@@ -44,11 +44,11 @@ void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
 // called from loop()
 void ServiceTimers()
 {
-  static bool encOverridePressed = false;
+  //static bool encOverridePressed = false;
 
-  static int currAdcValue0 = -1;
-  static int currAdcValue1 = -1;
-  static int currAdcValue2 = -1;
+  //static int currAdcValue0 = -1;
+  //static int currAdcValue1 = -1;
+  //static int currAdcValue2 = -1;
 
   currentMillis = millis();  //get the current number of milliseconds since the program started
   if (currentMillis == baselineMillis)   // everything divides the 1 ms clock
@@ -82,8 +82,8 @@ void ServiceTimers()
 // ----------------- Cyclical --------------
 
   // 'Check override' timer is for checking if user has pressed or released the encoder override button.
-  encOverrideTimer--;   // use diff name since used for A to D also.
-
+//  encOverrideTimer--;   // use diff name since used for A to D also.
+/*
   if(encOverrideTimer == 0)
   {
     if (encOverridePressed)
@@ -122,7 +122,7 @@ void ServiceTimers()
 
     encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
   }
-
+*/
   // Pulse timer is just for reference. Idea is to have a constant pulse on the plotter display.
   pulseTimer--;
 

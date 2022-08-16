@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Trigger.h"
+#include "GM.h"
 
 /*
 Touch Buttons as Triggers
@@ -45,6 +46,19 @@ void InitTriggers()
             trigger[tt].isActive = false;
         }
     }
+
+    // Most Triggers are configured as part of a Preset. Here we define some that won't change.
+    trigger[0].evtType = TE_TYPE_BUTTON_PRESS;
+    trigger[0].evtParm = EncodeOverrideButton;
+    trigger[0].action = TrigActn_EncodeOverrideOn;
+    trigger[0].actionParm = 0;  // not used
+    trigger[0].isActive = true;
+
+    trigger[1].evtType = TE_TYPE_BUTTON_RELEASE;
+    trigger[1].evtParm = EncodeOverrideButton;
+    trigger[1].action = TrigActn_EncodeOverrideOff;
+    trigger[1].actionParm = 0;  // not used
+    trigger[1].isActive = true;
 }
 
 // ************************** CheckTriggers() ****************************
@@ -83,6 +97,18 @@ void CheckTriggers(eTrigEvtType evtType, int evtParm)
                     case TrigActn_RHC_RELEASE:
                         //Serial.println("Trigger = RHC_RELEASE");
                         EncodeStringwiseRhc(false, trigger[tt].actionParm);
+                        break;
+
+                    case TrigActn_EncodeOverrideOn:
+                        Serial.println("Trigger = EncodeOverrideOn");
+                        EncodeOverrideOnOff(true);
+                        DumpGtrInfo();
+                        break;
+
+                    case TrigActn_EncodeOverrideOff:
+                        Serial.println("Trigger = EncodeOverrideOff");
+                        EncodeOverrideOnOff(false);
+                        DumpGtrInfo();
                         break;
                 }
             }
