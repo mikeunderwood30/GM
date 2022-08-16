@@ -72,17 +72,19 @@ byte gChannel;  //  Channel numbers are 0 based
 
 TouchButtonItem touchButton[NUM_TOUCH_BUTTONS];
 
-void noteOn(byte channel, byte pitch, byte velocity) {
-	 //Serial.print("Sending note on, pitch = ");	
-	 //Serial.println(pitch);
+void noteOn(byte channel, byte pitch, byte velocity) 
+{
+	 Serial.print("Sending note on, pitch = ");	
+	 Serial.println(pitch);
 
 	midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOn);
 }
 
-void noteOff(byte channel, byte pitch, byte velocity) {
-	 //Serial.print("Sending note off, pitch = ");	
-	 //Serial.println(pitch);
+void noteOff(byte channel, byte pitch, byte velocity) 
+{
+	 Serial.print("Sending note off, pitch = ");	
+	 Serial.println(pitch);
 
 	midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
 	MidiUSB.sendMIDI(noteOff);
@@ -93,7 +95,8 @@ void noteOff(byte channel, byte pitch, byte velocity) {
 // Third parameter is the control number number (0-119).
 // Fourth parameter is the control value (0-127).
 
-void controlChange(byte channel, byte control, byte value) {
+void controlChange(byte channel, byte control, byte value) 
+{
 	midiEventPacket_t event = {0x0B, 0xB0 | channel, control, value};
 	MidiUSB.sendMIDI(event);
 
@@ -111,6 +114,9 @@ void setup()
 	Serial.begin(115200);
 	Serial1.begin(31250);
 	//Serial.begin(9600);
+
+	// while the serial stream is not open, do nothing:
+	while (!Serial) ;
 
 	Serial.println("Hello");
 
@@ -144,8 +150,6 @@ void setup()
   	InitTriggers();
 	InitPresetSelect();
 	InitAnalogControls();
-
-	ExecutePreset(0);
 }
 
 int incomingByte;
@@ -401,14 +405,16 @@ void DumpGtrInfo()
 	Serial.println("Guitar strings:");
 
 	// show info about each string:
-	Serial.println("Strings (ss, encMode): ");
+	Serial.println("Strings (ss, encModeBackup, encMode): ");
 	for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
 	{
 		Serial.print(ss);
 		Serial.print(", ");
 		Serial.print(lhEncode[ss].encModeBackup);	// encMode will be set to this when come out of override mode
+		Serial.print(", ");
+		Serial.print(lhEncode[ss].encMode);
 		Serial.println();
 	}
 
-Serial.println("Encoder modes: PRESET_SELECT, STRINGWISE_INT, STRINGWISE_EXT, GATED_AUTO_RHC, STRINGWISE_ORGAN, AUTOCHORD");
+	Serial.println("Encoder modes: PRESET_SELECT, STRINGWISE_INT, STRINGWISE_EXT, GATED_AUTO_RHC, STRINGWISE_ORGAN, AUTOCHORD");
 }

@@ -41,7 +41,7 @@ void InitEncoders()
 		//pinMode(rhcStr[ii].pinNumber, INPUT);
 		//digitalWrite(rhcStr[ii].pinNumber, HIGH);       // turn on pullup resistor
 
-		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_INT;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
+		//lhEncode[ii].encMode = ENC_MODE_STRINGWISE_INT;    //   ENC_MODE_STRINGWISE_ORGAN  ENC_MODE_STRINGWISE_INT ENC_MODE_GATED_AUTO_RHC
 
 		// Value ignored when isOpen == true.
 		//lhEncode[ii].currFret = -1;
@@ -51,7 +51,7 @@ void InitEncoders()
 		rhcStr[ii].rhcActive = false;
 	}
 
-	ExecutePreset(1);
+	ExecutePreset(0);
 }
 // ***************************** EncodeStringwiseLhc() *************************************
 // This part of the encoder handles whether the LH has changed. It is only called while

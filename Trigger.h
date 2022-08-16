@@ -24,8 +24,9 @@ enum eTrigAction {
     TrigActn_RHC_RELEASE    // actionParm specifies which string
 };
 
+extern void InitTriggers();
+extern void CheckTriggers(eTrigEvtType, int);
 
- 
 typedef struct
 {
     bool isActive;
