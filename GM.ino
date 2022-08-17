@@ -155,7 +155,7 @@ void setup()
 
 int incomingByte;
 
-static byte clockDivide = 6;
+static byte clockDivide = 24;
 
 // ***************************************** loop() *********************************** 
 void loop()
@@ -200,12 +200,15 @@ void loop()
 					break;
 
 				case 0xF8:	// MIDI clock
+				
+					ServiceTimers();
+
 					clockDivide--;
 					if (clockDivide <= 0)
 					{
-            			//Serial.print("-");
-						PickGatedStrings();
-						clockDivide = 6;
+            //Serial.print("-");
+						//PickGatedStrings();
+						clockDivide = 24;
 					}
 					break;
 			}
@@ -284,8 +287,6 @@ void loop()
 				break;	
 		}
 	}
-
-	ServiceTimers();
 
 	// check A-to-D values for on-board controls, such as pots, etc
 	// read pot1

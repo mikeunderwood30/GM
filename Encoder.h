@@ -56,7 +56,6 @@ typedef struct
 {
 	bool isActive; // set while timer is running
 	unsigned int count;	
-	unsigned char msgPitch;	// stored here for use in noteOff msg when it occurs.
 	int fret;	// fret which is being debounced
 } encoderDebounceItem;
 

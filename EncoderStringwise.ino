@@ -158,11 +158,16 @@ void EncodeStringwiseOrgan(int ss)
 			MidiUSB.flush();
 		}
 
-		if (!lhEncode[ss].isOpen)
+		if (!lhEncode[ss].isOpen && !encoderDebounce[ss].isActive)
 		{
 			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
 			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
+
+			// configure debounce. Guarantees minimum on time.
+			encoderDebounce[ss].fret = lhEncode[ss].currFret;
+			encoderDebounce[ss].count = 1;
+			encoderDebounce[ss].isActive = true;
 		}
 
 		lhEncode[ss].changed = false;

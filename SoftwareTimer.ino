@@ -50,14 +50,14 @@ void ServiceTimers()
   //static int currAdcValue1 = -1;
   //static int currAdcValue2 = -1;
 
-  currentMillis = millis();  //get the current number of milliseconds since the program started
-  if (currentMillis == baselineMillis)   // everything divides the 1 ms clock
-  //if (currentMillis < baselineMillis + 50)
-  {
-      return;
-  }
+  // currentMillis = millis();  //get the current number of milliseconds since the program started
+  // if (currentMillis == baselineMillis)   // everything divides the 1 ms clock
+  // //if (currentMillis < baselineMillis + 50)
+  // {
+  //     return;
+  // }
 
-  baselineMillis = currentMillis;
+  // baselineMillis = currentMillis;
 
   // 1 ms has elapsed
 
@@ -87,13 +87,20 @@ for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
     encoderDebounce[ss].count--;
     if (encoderDebounce[ss].count == 0)
     {
+      Serial.print("String ");
+      Serial.print(ss);
+      Serial.println(" timed out");
+      
       encoderDebounce[ss].isActive = false;
+
       // check whether the fret we think is pressed is really pressed. 
       if (!FretIsPressed(ss, encoderDebounce[ss].fret))
       {
         // send a noteoff for it. 
+        noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+        MidiUSB.flush();
       }
-      // If so, allow it to remain on.
+      // otherwise, allow it to remain on.
     }
   }
 }
