@@ -37,11 +37,22 @@ void ExecutePreset(int preset)
 	switch (preset)
 	{
 		case 0:
-			SetEncoderMode(ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN, ENC_MODE_STRINGWISE_ORGAN);
+			// Preset 0 is executed outside of override mode. Therefore, it can't call SetEncoderMode(),
+			// since that changes .encModeBackup, not encMode. It has to assign .encmode directly.
+			lhEncode[0].encMode = ENC_MODE_STRINGWISE_ORGAN;
+			lhEncode[1].encMode = ENC_MODE_STRINGWISE_ORGAN;
+			lhEncode[2].encMode = ENC_MODE_STRINGWISE_ORGAN;
+			lhEncode[3].encMode = ENC_MODE_STRINGWISE_ORGAN;
+
+			SetTuning(53, 48, 43, 38);
 			break;
 
 		case 1:
 			SetEncoderMode(ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC, ENC_MODE_GATED_AUTO_RHC);
+			break;
+
+		case 14:	// octave down
+			SetTuning(53, 48, 43, 38);
 			break;
 
 		case 15:	// octave up
@@ -75,7 +86,7 @@ void ExecutePreset(int preset)
 			Serial.println("S0F0 - all strs ENC_MODE_STRINGWISE_INT, set Triggers to support RHC ");
 			Serial.println("\tSet tuning, Low octave");
 			Serial.println("S0F1 - all strs ENC_MODE_STRINGWISE_ORGAN, set Triggers to send events ");
-			Serial.println("S1F14 - Set tuning, Lower octave");
+			Serial.println("S0F14 - Set tuning, Lower octave");
 			Serial.println("S0F15 - Set tuning, Higher octave");
 
 			Serial.println("S1F14 - all strs ENC_MODE_STRINGWISE_ORGAN");

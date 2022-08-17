@@ -8,10 +8,10 @@ unsigned long baselineMillis;  //some global variables available anywhere in the
 unsigned long currentMillis;
 
 unsigned int pulseTimer;
-unsigned int encOverrideTimer;
+//unsigned int encOverrideTimer;
 
 #define PULSE_TIMER_RELOAD  20
-#define ENC_OVERRIDE_TIMER_RELOAD  20
+//#define ENC_OVERRIDE_TIMER_RELOAD  20
 
 noteDurationItem noteBuffer[NOTE_BUFFER_SIZE];
 
@@ -23,7 +23,7 @@ void InitTimers()
 
   // cyclical timers
   pulseTimer = PULSE_TIMER_RELOAD;
-  encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
+  //encOverrideTimer = ENC_OVERRIDE_TIMER_RELOAD;
 }
 // ***************************************** AddNoteToTimerPool() ***********************************
 void AddNoteToTimerPool(unsigned int duration, byte msgPitch)
@@ -65,7 +65,7 @@ void ServiceTimers()
   //Serial.print(0);
 
 // ----------------- One-shot --------------  
-
+/*
   for (int ii = 0; ii < NOTE_BUFFER_SIZE; ii++)
   {
     if (noteBuffer[ii].isActive)
@@ -78,7 +78,25 @@ void ServiceTimers()
       }
     }
   }
+*/
 
+for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+{
+  if (encoderDebounce[ss].isActive)
+  {
+    encoderDebounce[ss].count--;
+    if (encoderDebounce[ss].count == 0)
+    {
+      encoderDebounce[ss].isActive = false;
+      // check whether the fret we think is pressed is really pressed. 
+      if (!FretIsPressed(ss, encoderDebounce[ss].fret))
+      {
+        // send a noteoff for it. 
+      }
+      // If so, allow it to remain on.
+    }
+  }
+}
 // ----------------- Cyclical --------------
 
   // 'Check override' timer is for checking if user has pressed or released the encoder override button.
@@ -132,4 +150,3 @@ void ServiceTimers()
     pulseTimer = PULSE_TIMER_RELOAD;
   }
 }
-

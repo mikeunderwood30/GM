@@ -29,6 +29,7 @@ byte acChord[AC_NUM_CHORDS][AC_NOTES_PER_CHORD] = {
 rhcStrItem rhcStr[NUM_GTR_STRINGS];
 //lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
 lhEncodeItem lhEncode[NUM_GTR_STRINGS];
+encoderDebounceItem encoderDebounce[NUM_GTR_STRINGS];	// used in organ mode only for now
 
 int noteDurationFromPot;
 byte monoCurrPitch;
@@ -48,11 +49,13 @@ void InitEncoders()
 
 		lhEncode[ii].isOpen = true;
 		lhEncode[ii].changed = false;
-		lhEncode[ii].encMode = ENC_MODE_STRINGWISE_ORGAN;
+		lhEncode[ii].msgPitch = 255;	// equiv to -1 for unsigned char
 		rhcStr[ii].rhcActive = false;
 	}
 
-     DumpGtrInfo();
+	ExecutePreset(0);
+
+    DumpGtrInfo();
 }
 // ***************************** EncodeStringwiseLhc() *************************************
 // This part of the encoder handles whether the LH has changed. It is only called while
@@ -147,6 +150,30 @@ void EncodeStringwiseOrgan(int ss)
 {
 	if (lhEncode[ss].changed)
 	{
+		// send noteOff whether open or not.
+		// if str is not open, we will also be sending a noteOn (see below).
+		if (lhEncode[ss].msgPitch != 255 && !encoderDebounce[ss].isActive)
+		{
+			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+			MidiUSB.flush();
+		}
+
+		if (!lhEncode[ss].isOpen)
+		{
+			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+			MidiUSB.flush();
+		}
+
+		lhEncode[ss].changed = false;
+	}
+}
+// ***************************** EncodeStringwiseOrgan() *************************************
+// Not used currently
+void EncodeStringwiseOrganTimed(int ss)
+{
+	if (lhEncode[ss].changed)
+	{
 		if (!lhEncode[ss].isOpen)		// ignore if 'open'
 		{
 			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
@@ -180,9 +207,12 @@ void EncodeAutochord(int ss)
 	}
 }
 // ***************************** scanBasic() *************************************
-// Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
-// For each string, scan and determine what is pressed. If something has changed, set a flag.
-// Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
+/* Called from loop(). Since it is common to all encoders, it is called regardless of which encoder mode is in effect.
+ For each string, scan and determine what is pressed. If something has changed since last scan,
+ set flag '.changed'.
+ If reach -1, also set the '.isOpen' flag.
+ Scan top-to-bottom for each string, and stop when we find one pressed. The 'highest fretted note wins' rule applies.
+ */
 void scanBasic()
 {
 	for (byte ss = 0; ss < NUM_GTR_STRINGS; ss++)
@@ -235,6 +265,19 @@ void scanBasic()
 		}
 	}
 }
+// ***************************** FretIsPressed() *************************************
+bool FretIsPressed(int ss, int ff)
+{
+	outputGmCount(gmMapByString[ss][ff]);
+
+	if (digitalRead(StrobeLHC) == LOW)
+	{	
+		return true;
+	}
+
+	return false;
+}
+
 // ***************************** PickGatedStrings() *************************************
 // Called from loop(), where we read MIDI in. 
 // Called every 16th note when we are receiving MIDI clks.
