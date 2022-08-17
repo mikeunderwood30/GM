@@ -177,7 +177,7 @@ void EncodeStringwiseOrganTimed(int ss)
 		if (!lhEncode[ss].isOpen)		// ignore if 'open'
 		{
 			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			AddNoteToTimerPool(200, pitch);
+			//AddNoteToTimerPool(200, pitch);
 			noteOn(0, pitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
 		}
@@ -290,7 +290,7 @@ void PickGatedStrings()
 		{
 			// retrieve the current LH value and send a timed msg.
 			byte pitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			AddNoteToTimerPool(200, pitch);
+			//AddNoteToTimerPool(200, pitch);
 			noteOn(0, pitch, 64);   // Channel, pitch, velocity
 			MidiUSB.flush();
 		}
