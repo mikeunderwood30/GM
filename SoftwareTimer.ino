@@ -80,30 +80,30 @@ void ServiceTimers()
   }
 */
 
-for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
-{
-  if (encoderDebounce[ss].isActive)
-  {
-    encoderDebounce[ss].count--;
-    if (encoderDebounce[ss].count == 0)
-    {
-      Serial.print("String ");
-      Serial.print(ss);
-      Serial.println(" timed out");
+// for (int ss = 0; ss < NUM_GTR_STRINGS; ss++)
+// {
+//   if (encoderDebounce[ss].isActive)
+//   {
+//     encoderDebounce[ss].count--;
+//     if (encoderDebounce[ss].count == 0)
+//     {
+//       Serial.print("String ");
+//       Serial.print(ss);
+//       Serial.println(" timed out");
       
-      encoderDebounce[ss].isActive = false;
+//       encoderDebounce[ss].isActive = false;
 
-      // check whether the fret we think is pressed is really pressed. 
-      if (!FretIsPressed(ss, encoderDebounce[ss].fret))
-      {
-        // send a noteoff for it. 
-        noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
-        MidiUSB.flush();
-      }
-      // otherwise, allow it to remain on.
-    }
-  }
-}
+//       // check whether the fret we think is pressed is really pressed. 
+//       if (!FretIsPressed(ss, encoderDebounce[ss].fret))
+//       {
+//         // send a noteoff for it. 
+//         noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+//         MidiUSB.flush();
+//       }
+//       // otherwise, allow it to remain on.
+//     }
+//   }
+// }
 // ----------------- Cyclical --------------
 
   // 'Check override' timer is for checking if user has pressed or released the encoder override button.

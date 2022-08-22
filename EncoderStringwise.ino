@@ -27,9 +27,8 @@ byte acChord[AC_NUM_CHORDS][AC_NOTES_PER_CHORD] = {
 // ------------------------------------ Encoder data ---------------------------
 
 rhcStrItem rhcStr[NUM_GTR_STRINGS];
-//lhcBasicItem lhEncodeBasic[NUM_GTR_STRINGS];
 lhEncodeItem lhEncode[NUM_GTR_STRINGS];
-encoderDebounceItem encoderDebounce[NUM_GTR_STRINGS];	// used in organ mode only for now
+// encoderDebounceItem encoderDebounce[NUM_GTR_STRINGS];	// used in organ mode only for now
 
 int noteDurationFromPot;
 byte monoCurrPitch;
@@ -152,25 +151,25 @@ void EncodeStringwiseOrgan(int ss)
 	{
 		// send noteOff whether open or not.
 		// if str is not open, we will also be sending a noteOn (see below).
-		if (lhEncode[ss].msgPitch != 255 && !encoderDebounce[ss].isActive)
-		{
-			noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
-			MidiUSB.flush();
-		}
+		// if (lhEncode[ss].msgPitch != 255 && !encoderDebounce[ss].isActive)
+		// {
+		// 	noteOff(0, lhEncode[ss].msgPitch, 64); 	// Channel, pitch, velocity
+		// 	MidiUSB.flush();
+		// }
 
-		if (!lhEncode[ss].isOpen && !encoderDebounce[ss].isActive)
-		{
-			lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
-			noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
-			MidiUSB.flush();
+		// if (!lhEncode[ss].isOpen && !encoderDebounce[ss].isActive)
+		// {
+		// 	lhEncode[ss].msgPitch = lhEncode[ss].currFret + lhEncode[ss].pitchOffset;
+		// 	noteOn(0, lhEncode[ss].msgPitch, 64);   // Channel, pitch, velocity
+		// 	MidiUSB.flush();
 
-			// configure debounce. Guarantees minimum on time.
-			encoderDebounce[ss].fret = lhEncode[ss].currFret;
-			encoderDebounce[ss].count = 1;
-			encoderDebounce[ss].isActive = true;
-		}
+		// 	// configure debounce. Guarantees minimum on time.
+		// 	encoderDebounce[ss].fret = lhEncode[ss].currFret;
+		// 	encoderDebounce[ss].count = 1;
+		// 	encoderDebounce[ss].isActive = true;
+		// }
 
-		lhEncode[ss].changed = false;
+		// lhEncode[ss].changed = false;
 	}
 }
 // ***************************** EncodeStringwiseOrgan() *************************************

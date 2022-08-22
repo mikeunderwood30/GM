@@ -19,12 +19,6 @@ enum eEncMode {
 #define AC_NUM_CHORDS 5
 #define AC_NOTES_PER_CHORD 4
 
-// used for timing note duration
-// typedef struct
-// {
-// 	bool isActive;
-// 	unsigned int count;	
-
 // used for per-string capacitive touch sensor
 typedef struct
 {
@@ -52,12 +46,12 @@ typedef struct
 
 // this is used only in OrganMode for now. May be incorporated later into others.
 // it sets a min on time for notes.
-typedef struct
-{
-	bool isActive; // set while timer is running
-	unsigned int count;	
-	int fret;	// fret which is being debounced
-} encoderDebounceItem;
+// typedef struct
+// {
+// 	bool isActive; // set while timer is running
+// 	unsigned int count;	
+// 	int fret;	// fret which is being debounced
+// } encoderDebounceItem;
 
 extern int noteDurationFromPot;
 extern byte monoCurrPitch;
@@ -70,12 +64,10 @@ extern const int D4_pin;
 extern const int D5_pin;
 
 extern const int StrobeLHC;
-//extern const int EncodeOverrideButton;
 
 extern rhcStrItem rhcStr[];
-//extern lhcBasicItem lhEncodeBasic[];
 extern lhEncodeItem lhEncode[];
-extern encoderDebounceItem encoderDebounce[];
+// extern encoderDebounceItem encoderDebounce[];
 
 // define pins that select the count. Pin numbers here are for the Sparkfun Pro Micro Qwiic.
 const int D0_pin = 2;		// p5. Mega p27
@@ -86,6 +78,5 @@ const int D4_pin = 6;		// p9. Mega p23
 const int D5_pin = 7;		// p10. Mega p22
 
 const int StrobeLHC = 8;	// p11. Mega p28.
-//const int EncodeOverrideButton = 9;	// p12
 
 #endif

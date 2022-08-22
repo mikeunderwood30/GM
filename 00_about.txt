@@ -1,0 +1,5 @@
+
+In this version, still working on mono mode encoder.
+It scans, and when finds a change, turns off the existing note (if there is one - first time there won't be) and turns on the new note. No debounce.
+
+Prev version had debounce driven by MIDI clk, but was still too jittery. 
